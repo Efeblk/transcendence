@@ -1,6 +1,7 @@
 from django.urls import path
-from django.shortcuts import render
+from . import views
 
 urlpatterns = [
-    path('test-bootstrap/', lambda request: render(request, 'game/test_bootstrap.html')),
+    path('', views.index, name='index'),         # Root URL shows index.html
+    path('play/', views.game_view, name='game'), # URL for game.html
 ]

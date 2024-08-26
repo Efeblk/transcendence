@@ -1,0 +1,101 @@
+{% extends 'game/base.html' %}
+
+{% block title %}Play Ping Pong{% endblock %}
+
+{% block content %}
+<div id="gameContainer"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+    // Scene setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('gameContainer').appendChild(renderer.domElement);
+
+    // Ping pong table
+    const tableGeometry = new THREE.BoxGeometry(10, 0.5, 5);
+    const tableMaterial = new THREE.MeshBasicMaterial({ color: 0x006400 });
+    const table = new THREE.Mesh(tableGeometry, tableMaterial);
+    table.position.y = -2;
+    scene.add(table);
+
+    // Paddles
+    const paddleGeometry = new THREE.BoxGeometry(1, 0.2, 2);
+    const playerPaddleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const aiPaddleMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+    const playerPaddle = new THREE.Mesh(paddleGeometry, playerPaddleMaterial);
+    const aiPaddle = new THREE.Mesh(paddleGeometry, aiPaddleMaterial);
+    playerPaddle.position.z = 2.5;
+    aiPaddle.position.z = -2.5;
+    scene.add(playerPaddle);
+    scene.add(aiPaddle);
+
+    // Ball
+    const ballGeometry = new THREE.SphereGeometry(0.2, 32, 32);
+    const ballMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+    ball.position.set(0, 0, 0);
+    scene.add(ball);
+
+    // Camera position
+    camera.position.y = 3;
+    camera.position.z = 10;
+    camera.lookAt(scene.position);
+
+    // Ball movement variables
+    let ballSpeed = 0.1;
+    let ballDirection = { x: 0.02, z: 0.05 };
+
+    // Player paddle controls
+    document.addEventListener('keydown', function(event) {
+        const key = event.key;
+
+        // Move left
+        if (key === 'ArrowLeft') {
+            playerPaddle.position.x -= 0.5;
+        }
+        // Move right
+        else if (key === 'ArrowRight') {
+            playerPaddle.position.x += 0.5;
+        }
+
+        // Limit paddle movement to the table bounds
+        playerPaddle.position.x = Math.max(-4.5, Math.min(4.5, playerPaddle.position.x));
+    });
+
+    // Game loop
+    function animate() {
+        requestAnimationFrame(animate);
+
+        // Move the ball
+        ball.position.x += ballDirection.x;
+        ball.position.z += ballDirection.z;
+
+        // Ball collision with the table edges
+        if (ball.position.x > 4.5 || ball.position.x < -4.5) {
+            ballDirection.x = -ballDirection.x;
+        }
+
+        // Ball collision with paddles
+        if ((ball.position.z >= playerPaddle.position.z - 0.1 && ball.position.x >= playerPaddle.position.x - 0.5 && ball.position.x <= playerPaddle.position.x + 0.5) ||
+            (ball.position.z <= aiPaddle.position.z + 0.1 && ball.position.x >= aiPaddle.position.x - 0.5 && ball.position.x <= aiPaddle.position.x + 0.5)) {
+            ballDirection.z = -ballDirection.z;
+            ballSpeed += 0.01; // Increase speed slightly after each hit
+        }
+
+        // Ball reset after missing paddles
+        if (ball.position.z > 3 || ball.position.z < -3) {
+            ball.position.set(0, 0, 0);
+            ballSpeed = 0.1;
+        }
+
+        // Basic AI movement
+        aiPaddle.position.x = ball.position.x;
+
+        renderer.render(scene, camera);
+    }
+
+    animate();
+</script>
+{% endblock %}
