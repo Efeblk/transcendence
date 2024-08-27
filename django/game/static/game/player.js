@@ -34,4 +34,12 @@ class Player {
     getPaddle() {
         return this.paddle;
     }
+
+    hitBall(ball) {
+        if (this.moveLeftActive) {
+            ball.applySpin(-0.5);  // Apply left spin
+        } else if (this.moveRightActive) {
+            ball.applySpin(0.5);  // Apply right spin
+        }
+    }
 }

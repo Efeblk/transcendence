@@ -7,15 +7,24 @@
 {% block content %}
 <div id="gameContainer"></div>
 <button id="restartButton" style="display: none;" onclick="restartGame()">Restart Game</button>
+
+<!-- Debug Information -->
+<div id="debugInfo" style="position: fixed; top: 60px; left: 150px; color: white; font-family: Arial, sans-serif;">
+    <div>Ball Speed: <span id="ballSpeed">0</span></div>
+    <div>Ball Spin: <span id="ballSpin">0</span></div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="{% static 'game/config.js' %}"></script>  <!-- Load the config file -->
-<script src="{% static 'game/table.js' %}"></script>  <!-- Load the Table class -->
+<script src="{% static 'game/config.js' %}"></script>
+<script src="{% static 'game/table.js' %}"></script>
 <script src="{% static 'game/paddle.js' %}"></script>
 <script src="{% static 'game/player.js' %}"></script>
 <script src="{% static 'game/ball.js' %}"></script>
 <script src="{% static 'game/game.js' %}"></script>
 <script>
-    const game = new Game();
+    const texturePath = "{% static 'game/textures/wood.jpg' %}";
+
+    const game = new Game(texturePath);
     game.start();
 
     function restartGame() {

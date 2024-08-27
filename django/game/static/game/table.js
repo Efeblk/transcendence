@@ -1,9 +1,13 @@
 class Table {
-    constructor(scene) {
+    constructor(scene, texturePath) {
         const { width, height, depth } = gameConfig.table.size;
         this.geometry = new THREE.BoxGeometry(width, height, depth);
-        this.material = new THREE.MeshBasicMaterial({ color: gameConfig.table.color });
-        this.mesh = new THREE.Mesh(this.geometry, this.material);
+        
+        const textureLoader = new THREE.TextureLoader();
+        const tableTexture = textureLoader.load(texturePath);  // Use the texturePath passed from the HTML
+        const tableMaterial = new THREE.MeshBasicMaterial({ map: tableTexture });
+
+        this.mesh = new THREE.Mesh(this.geometry, tableMaterial);
         this.mesh.position.y = gameConfig.table.positionY;
         this.mesh.position.z = gameConfig.table.positionZ;
         scene.add(this.mesh);

@@ -1,5 +1,5 @@
 class Game {
-    constructor() {
+    constructor(texturePath) {
         this.scene = new THREE.Scene();
 
         const aspectRatio = gameConfig.camera.aspectRatio;
@@ -11,15 +11,15 @@ class Game {
         this.renderer.setSize(gameConfig.renderer.width, gameConfig.renderer.height);
         document.getElementById('gameContainer').appendChild(this.renderer.domElement);
 
-        this.table = new Table(this.scene);
-        this.player = new Player(this.scene, gameConfig.paddle.positionZ.player, gameConfig.paddle.color.player);  // Player paddle
-        this.aiPaddle = new Paddle(this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai);  // AI paddle
-        this.ball = new Ball(this.scene);  // Ball
+        this.table = new Table(this.scene, texturePath);  // Pass the texturePath to the Table class
+        this.player = new Player(this.scene, gameConfig.paddle.positionZ.player, gameConfig.paddle.color.player);
+        this.aiPaddle = new Paddle(this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai);
+        this.ball = new Ball(this.scene);
 
         this.setupLights();
         this.setupControls();
 
-        this.isRunning = true;  // Track if the game is running
+        this.isRunning = true;
 
         this.animate();
     }
@@ -40,18 +40,23 @@ class Game {
 
     animate() {
         if (!this.isRunning) return;  // Stop animation if the game is not running
-
+    
         requestAnimationFrame(() => this.animate());
-
+    
         this.player.update();  // Update player paddle movement
         this.ball.update();  // Update ball movement
         this.updateAIPaddle();  // Update AI paddle movement
-
+    
         this.checkCollisions();  // Check for collisions between ball and paddles
         this.checkScore();  // Check if someone scored
-
+    
+        // Update debug information on the screen
+        document.getElementById('ballSpeed').innerText = this.ball.speed.toFixed(2);  // Display actual speed
+        document.getElementById('ballSpin').innerText = this.ball.spin.toFixed(2);
+    
         this.renderer.render(this.scene, this.camera);
     }
+    
 
     updateAIPaddle() {
         const aiSpeed = 0.05;  // AI speed factor (lower values = smoother but slower movement)
@@ -64,10 +69,12 @@ class Game {
 
     checkCollisions() {
         if (this.ball.isCollidingWith(this.player.getPaddle())) {
+            this.player.hitBall(this.ball);  // Apply spin based on player movement
             this.ball.bounce();
         }
 
         if (this.ball.isCollidingWith(this.aiPaddle)) {
+            // Optionally apply spin here as well for AI
             this.ball.bounce();
         }
     }

@@ -7,17 +7,34 @@ class Ball {
         this.mesh.position.set(0, gameConfig.paddle.positionY, 0);  // Start the ball at the same Y as the paddle
         scene.add(this.mesh);
 
-        this.speed = 1.2;
+        this.speed = 0.5;
         this.direction = { x: 0.02, z: 0.05 };  // Initial direction of the ball
-        this.maxSpeed = 3;  // Set a maximum speed to avoid excessive speed
+        this.spin = 0;  // Introduce a spin property
+        this.maxSpeed = 1;  // Set a maximum speed to avoid excessive speed
+    }
+
+    applySpin(amount) {
+        this.spin += amount;  // Adjust the spin by the given amount
     }
 
     update() {
+        // Apply spin effect by adjusting the direction based on the spin value
+        const spinEffect = this.spin * 0.001;
+        const angle = Math.atan2(this.direction.z, this.direction.x) + spinEffect;
+
+        // Calculate new direction based on the angle after applying spin
+        const magnitude = Math.sqrt(this.direction.x ** 2 + this.direction.z ** 2);
+        this.direction.x = magnitude * Math.cos(angle);
+        this.direction.z = magnitude * Math.sin(angle);
+
+        // Update ball position
         this.mesh.position.x += this.direction.x * this.speed;
         this.mesh.position.z += this.direction.z * this.speed;
 
-        if (this.mesh.position.x > (gameConfig.table.size.width / 2) || this.mesh.position.x < -(gameConfig.table.size.width / 2)) {
-            this.direction.x = -this.direction.x;  // Bounce off the side walls
+        // Bounce off the side walls
+        if (this.mesh.position.x > 4.5 || this.mesh.position.x < -4.5) {
+            this.direction.x = -this.direction.x;
+            this.spin = -this.spin;  // Invert spin when bouncing off walls
         }
     }
 
@@ -34,21 +51,18 @@ class Ball {
     reset() {
         this.mesh.position.set(0, gameConfig.paddle.positionY, 0);
         this.direction = { x: 0.02, z: 0.05 };  // Reset the ball direction and speed
-        this.speed = 1.2;
+        this.speed = 0.5;
+        this.spin = 0;  // Reset the spin
     }
 
     isOutOfBounds() {
-        // Define the boundaries for the out-of-bounds check
+        // Check if the ball is out of the play area (beyond the AI or player's side of the table)
         const tableDepth = gameConfig.table.size.depth;
-        const ballPositionZ = this.mesh.position.z;
-    
-        // Check if the ball has passed the AI side or the player side
-        const isBeyondPlayerSide = ballPositionZ > tableDepth / 2 + gameConfig.table.positionZ;
-        const isBeyondAISide = ballPositionZ < -(tableDepth / 2) + gameConfig.table.positionZ;
-    
-        return isBeyondPlayerSide || isBeyondAISide;
+        return (
+            (this.mesh.position.z > tableDepth / 2 - 2) ||  // Ball is beyond the player's side
+            (this.mesh.position.z < -tableDepth / 2 - 2)    // Ball is beyond the AI's side
+        );
     }
-    
 
     isCollidingWith(paddle) {
         const ballRadius = gameConfig.ball.size;
