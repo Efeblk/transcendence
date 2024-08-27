@@ -1,8 +1,17 @@
 class Ball {
     constructor(scene) {
-        const { size, color, metalness, roughness } = gameConfig.ball;
+        const { size, metalness, roughness } = gameConfig.ball;
         this.geometry = new THREE.SphereGeometry(size, 32, 32);
-        this.material = new THREE.MeshStandardMaterial({ color: color, metalness: metalness, roughness: roughness });
+        
+        // Neon-like emissive material
+        this.material = new THREE.MeshStandardMaterial({ 
+            color: 0xffffff, 
+            emissive: 0x0000ff,  // Initial emissive color
+            metalness: metalness, 
+            roughness: roughness,
+            emissiveIntensity: 1 // Emissive intensity for glowing effect
+        });
+
         this.mesh = new THREE.Mesh(this.geometry, this.material);
         this.mesh.position.set(0, gameConfig.paddle.positionY, 0);  // Start the ball at the same Y as the paddle
         scene.add(this.mesh);
@@ -11,6 +20,9 @@ class Ball {
         this.direction = { x: 0.02, z: 0.05 };  // Initial direction of the ball
         this.spin = 0;  // Introduce a spin property
         this.maxSpeed = 1;  // Set a maximum speed to avoid excessive speed
+
+        this.colorChangeSpeed = 0.02;  // Speed of color change
+        this.colorOffset = 0;  // Offset for color oscillation
     }
 
     applySpin(amount) {
@@ -31,6 +43,15 @@ class Ball {
         this.mesh.position.x += this.direction.x * this.speed;
         this.mesh.position.z += this.direction.z * this.speed;
 
+        this.colorOffset += this.colorChangeSpeed;
+
+        // Keep red and green higher, and blue low to avoid grey
+        const r = Math.sin(this.colorOffset) * 0.3 + 0.7;  // Oscillate between 0.7 and 1 for red
+        const g = Math.sin(this.colorOffset + Math.PI / 4) * 0.3 + 0.7;  // Oscillate between 0.7 and 1 for green
+        const b = Math.sin(this.colorOffset + Math.PI / 2) * 0.1 + 0.1;  // Keep blue very low
+    
+        this.material.emissive.setRGB(r, g, b);
+    
         // Bounce off the side walls
         if (this.mesh.position.x > 4.5 || this.mesh.position.x < -4.5) {
             this.direction.x = -this.direction.x;
