@@ -1,19 +1,8 @@
 {% extends 'game/base.html' %}
 
-{% block title %}Ping Pong Matches{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1>Welcome to the Ping Pong Game!</h1>
-    <p class="lead">Track your matches, scores, and improve your skills.</p>
-    <a href="{% url 'game' %}" class="btn btn-primary">Play the Game</a> <!-- Link to game.html -->
-    <h2 class="mt-5">Recent Matches</h2>
-    <ul class="list-group">
-        {% for match in matches %}
-            <li class="list-group-item">
-                <a href="{% url 'match_detail' match.id %}">{{ match.player1 }} vs {{ match.player2 }} - {{ match.played_at|date:"Y-m-d H:i" }}</a>
-            </li>
-        {% endfor %}
-    </ul>
-</div>
+<h1>Welcome to the Ping Pong Game</h1>
+<p>This is the home page where users can learn more about the game.</p>
 {% endblock %}

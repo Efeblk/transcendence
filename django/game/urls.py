@@ -1,7 +1,7 @@
 from django.urls import path
-from . import views
+from .views import pingpong_view, home_view
 
 urlpatterns = [
-    path('', views.index, name='index'),         # Root URL shows index.html
-    path('play/', views.game_view, name='game'), # URL for game.html
+    path('pingpong/', pingpong_view, name='pingpong'),
+    path('', home_view, name='home'),
 ]

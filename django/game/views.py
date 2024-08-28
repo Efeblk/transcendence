@@ -1,9 +1,7 @@
-from django.shortcuts import render
-from .models import Match
+from django.shortcuts import render, redirect
 
-def index(request):
-    matches = Match.objects.all().order_by('-played_at')
-    return render(request, 'game/index.html', {'matches': matches})
+def pingpong_view(request):
+    return render(request, 'game/pingpong.html')
 
-def game_view(request):
-    return render(request, 'game/game.html')
+def home_view(request):
+    return render(request, 'game/index.html')  # Ensure 'index.html' exists in the 'templates/game/' directory

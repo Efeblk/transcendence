@@ -19,6 +19,10 @@ class Game {
         this.setupLights();
         this.setupControls();
 
+        this.playerScore = 0;  // Player's score
+        this.aiScore = 0;  // AI's score
+        this.maxScore = 3;  // Points to win
+
         this.isRunning = true;
 
         this.animate();
@@ -53,6 +57,8 @@ class Game {
         // Update debug information on the screen
         document.getElementById('ballSpeed').innerText = this.ball.speed.toFixed(2);  // Display actual speed
         document.getElementById('ballSpin').innerText = this.ball.spin.toFixed(2);
+        document.getElementById('playerScore').innerText = this.playerScore;  // Display player's score
+        document.getElementById('aiScore').innerText = this.aiScore;  // Display AI's score
     
         this.renderer.render(this.scene, this.camera);
     }
@@ -74,19 +80,65 @@ class Game {
         }
 
         if (this.ball.isCollidingWith(this.aiPaddle)) {
-            // Optionally apply spin here as well for AI
             this.ball.bounce();
         }
     }
 
     checkScore() {
         if (this.ball.isOutOfBounds()) {
-            this.endGame();
+            if (this.ball.mesh.position.z > 0) {
+                this.aiScore++;  // AI scores if the ball is out on the player's side
+            } else {
+                this.playerScore++;  // Player scores if the ball is out on the AI's side
+            }
+
+            // Reset the ball for the next round
+            this.ball.reset();
+
+            // Check if there's a winner
+            if (this.playerScore >= this.maxScore || this.aiScore >= this.maxScore) {
+                this.endGame();
+            }
         }
+    }
+
+    saveScore(playerName, score) {
+        fetch('/api/gamescores/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                player_name: playerName,
+                score: score,
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Score saved:', data);
+        })
+        .catch(error => {
+            console.error('Error saving score:', error);
+        });
+    }
+
+    loadLeaderboard() {
+        fetch('/api/gamescores/')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Leaderboard:', data);
+            // You can update the UI with the leaderboard data if needed
+        })
+        .catch(error => {
+            console.error('Error loading leaderboard:', error);
+        });
     }
 
     endGame() {
         this.isRunning = false;  // Stop the game
+        let winner = this.playerScore > this.aiScore ? "Player" : "AI";
+        document.getElementById('winner').innerText = `${winner} wins!`;  // Display the winner
+        this.saveScore(winner, this.playerScore > this.aiScore ? this.playerScore : this.aiScore);  // Save the score to the API
         document.getElementById('restartButton').style.display = 'block';  // Show the restart button
     }
 
@@ -94,6 +146,9 @@ class Game {
         this.ball.reset();  // Reset the ball to its initial position
         this.player.getPaddle().mesh.position.x = 0;  // Reset player paddle position
         this.aiPaddle.mesh.position.x = 0;  // Reset AI paddle position
+        this.playerScore = 0;  // Reset player score
+        this.aiScore = 0;  // Reset AI score
+        document.getElementById('winner').innerText = '';  // Clear the winner text
         this.isRunning = true;  // Restart the game
         this.animate();  // Restart the animation loop
     }

@@ -1,8 +1,6 @@
-from django.contrib import admin
-from django.urls import include, path
+from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),             # Admin interface
-    path('game/', include('game.urls')),         # Include URLs from the game app
-    path('', include('game.urls')),              # Optionally, make the game app the root path
+    path('api/', include('api.urls')),
+    path('', include('game.urls')),  # other app urls
 ]
