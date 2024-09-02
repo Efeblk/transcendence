@@ -121,7 +121,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'  # This should point to the URL that serves your static files
+
+STATICFILES_DIRS = [
+    BASE_DIR / "game/static",  # Ensure this directory exists
+    BASE_DIR / "backend/static",  # If you're using backend/static for static files
+]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
