@@ -1,7 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 
 def pingpong_view(request):
-    return render(request, 'game/pingpong.html')
+    if request.headers.get('Hx-Request'):  # HTMX request check
+        return render(request, 'game/pingpong.html')  # Partial
+    return render(request, 'game/base.html')  # Full page load
 
 def home_view(request):
-    return render(request, 'game/index.html')  # Ensure 'index.html' exists in the 'templates/game/' directory
+    return render(request, 'game/index.html')

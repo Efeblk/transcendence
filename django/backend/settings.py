@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'game'
+    'game',
+    'django_htmx',
 ]
 
 MIDDLEWARE = [
@@ -125,7 +126,7 @@ STATIC_URL = '/static/'  # This should point to the URL that serves your static 
 
 STATICFILES_DIRS = [
     BASE_DIR / "game/static",  # Ensure this directory exists
-    BASE_DIR / "backend/static",  # If you're using backend/static for static files
+    #BASE_DIR / "backend/static",  # If you're using backend/static for static files
 ]
 
 
