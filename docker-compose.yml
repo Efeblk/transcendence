@@ -3,11 +3,12 @@ version: '3.8'
 services:
   web:
     build: ./django
-    command: python manage.py runserver 0.0.0.0:8000
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./django:/app
     depends_on:
-      - db
+      db:
+        condition: service_healthy  # Wait until PostgreSQL is healthy
     environment:
       POSTGRES_DB: pingpongdb
       POSTGRES_USER: postgres
@@ -17,8 +18,7 @@ services:
       - backend
 
   db:
-    build:
-      context: ./postgres
+    image: postgres:latest
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
@@ -27,6 +27,11 @@ services:
       POSTGRES_PASSWORD: yourpassword
     networks:
       - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
 
   nginx:
     image: nginx:latest

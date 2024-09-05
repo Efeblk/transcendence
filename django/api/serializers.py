@@ -5,4 +5,5 @@ from game.models import GameScore
 class GameScoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = GameScore
-        fields = '__all__'
+        fields = ['player', 'score']
+

@@ -103,17 +103,25 @@ class Game {
     }
 
     saveScore(playerName, score) {
+        const scoreData = {
+            player: playerName,
+            score: score,
+        };
+        console.log('Data being sent:', scoreData);  // Add this to log the JSON data
+    
         fetch('/api/gamescores/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                player_name: playerName,
-                score: score,
-            }),
+            body: JSON.stringify(scoreData),  // Ensure this is correctly converted to JSON
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             console.log('Score saved:', data);
         })
@@ -121,7 +129,8 @@ class Game {
             console.error('Error saving score:', error);
         });
     }
-
+    
+    
     loadLeaderboard() {
         fetch('/api/gamescores/')
         .then(response => response.json())
@@ -135,10 +144,12 @@ class Game {
     }
 
     endGame() {
+        console.log("ENDINGPOOOOO");
         this.isRunning = false;  // Stop the game
         let winner = this.playerScore > this.aiScore ? "Player" : "AI";
-        document.getElementById('winner').innerText = `${winner} wins!`;  // Display the winner
+        console.log("ENDI");
         this.saveScore(winner, this.playerScore > this.aiScore ? this.playerScore : this.aiScore);  // Save the score to the API
+        console.log("ENDI2");
         document.getElementById('restartButton').style.display = 'block';  // Show the restart button
     }
 
