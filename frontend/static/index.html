@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transcendence SPA</title>
+
+    <!-- Load Bootstrap for styling -->
+    <link href="/style.css" rel="stylesheet">
+
+    <!-- Load Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+
+    <!-- Link to your custom JavaScript for the game -->
+    <script src="/static/game/config.js"></script>
+    <script src="/static/game/table.js"></script>
+    <script src="/static/game/paddle.js"></script>
+    <script src="/static/game/player.js"></script>
+    <script src="/static/game/ball.js"></script>
+    <script src="/static/game/game.js"></script>
+    <script src="/app.js"></script>
+
+    <script>
+        // Set the texture path for the game
+        const texturePath = "/static/game/textures/table.jpg";
+    </script>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="/" data-link>Home</a>
+            <a class="nav-link" href="/about" data-link>About</a>
+            <a class="nav-link" href="/game" data-link>Game</a>
+        </nav>
+        
+        <div id="app">
+            <!-- Dynamic content will be rendered here -->
+            <h1>Welcome to Transcendence</h1>
+            <p>This is the initial home page content.</p>
+        </div>
+    </div>
+
+    <!-- Load your custom app.js to handle SPA behavior -->
+    <script src="/app.js"></script>
+</body>
+</html>

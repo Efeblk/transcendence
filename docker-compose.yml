@@ -1,53 +1,48 @@
 version: '3.8'
 
 services:
-  web:
-    build: ./django
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    volumes:
-      - ./django:/app
-    depends_on:
-      db:
-        condition: service_healthy  # Wait until PostgreSQL is healthy
-    environment:
-      POSTGRES_DB: pingpongdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: yourpassword
-      POSTGRES_HOST: db
-    networks:
-      - backend
-
+  # PostgreSQL Database Service
   db:
-    image: postgres:latest
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
+    image: postgres:13
     environment:
-      POSTGRES_DB: pingpongdb
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: yourpassword
-    networks:
-      - backend
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: game_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
-      retries: 5
       timeout: 5s
+      retries: 5
 
+  # Django (Backend) Service
+  game:
+    build: ./backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres:password@db:5432/game_db
+    entrypoint: /app/entrypoint.sh  # This will trigger the entrypoint script
+
+  # Nginx Service (Merged with Frontend)
   nginx:
-    image: nginx:latest
+    build:
+      context: .  # Make sure this context is set correctly where your nginx.conf is located
+      dockerfile: ./nginx/Dockerfile
     ports:
       - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
-      - web
-    networks:
-      - frontend
-      - backend
+      - game
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf  # Ensure the correct config is mounted
+      - ./backend/staticfiles:/usr/share/nginx/html/staticfiles
 
 volumes:
-  postgres_data:
-
-networks:
-  frontend:
-  backend:
+  pgdata:
