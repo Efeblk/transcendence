@@ -1,6 +1,27 @@
 version: '3.8'
 
 services:
+  user_db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres_user
+      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: user_db
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
+
+  user_service:
+    build: ./user_service
+    command: python manage.py runserver 0.0.0.0:8001
+    volumes:
+      - ./user_service:/app
+    ports:
+      - "8001:8001"
+    depends_on:
+      - user_db
+    environment:
+      DATABASE_URL: postgres://postgres_user:postgres_password@user_db:5432/user_db
+
   # PostgreSQL Database Service
   db:
     image: postgres:13
@@ -45,4 +66,5 @@ services:
       - ./backend/staticfiles:/usr/share/nginx/html/staticfiles
 
 volumes:
+  user_db_data:
   pgdata:
