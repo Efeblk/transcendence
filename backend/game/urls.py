@@ -1,6 +1,11 @@
 from django.urls import path
-from . import views
+from .views import PlayerListCreateView, PlayerDetailView, GameScoreListCreateView, GameScoreDetailView, GameDataListCreateView, GameDataDetailView
 
 urlpatterns = [
-    path('api/game/', views.game_data_api, name='game-data-api'),  # This is where the frontend fetches data
+    path('players/', PlayerListCreateView.as_view(), name='player-list'),
+    path('players/<int:pk>/', PlayerDetailView.as_view(), name='player-detail'),
+    path('scores/', GameScoreListCreateView.as_view(), name='gamescore-list'),
+    path('scores/<int:pk>/', GameScoreDetailView.as_view(), name='gamescore-detail'),
+    path('game-data/', GameDataListCreateView.as_view(), name='game-data-list'),
+    path('game-data/<int:pk>/', GameDataDetailView.as_view(), name='game-data-detail'),
 ]

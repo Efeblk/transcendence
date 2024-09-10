@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import Game
+from .models import GameData  # Correct model import
 
-# Register the Game model
-@admin.register(Game)
-class GameAdmin(admin.ModelAdmin):
-    list_display = ('player_name', 'score', 'level', 'timestamp')
-    search_fields = ('player_name',)
+# Register the GameData model with the admin site
+@admin.register(GameData)
+class GameDataAdmin(admin.ModelAdmin):
+    list_display = ['player', 'ai_score', 'player_score', 'winner', 'timestamp']
+    search_fields = ['player', 'winner']
