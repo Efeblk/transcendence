@@ -1,19 +1,23 @@
-// Function to dynamically load the game controller script and start the game
-function loadGameController() {
+// Function to dynamically load the page-specific start script and start the corresponding logic
+function pageStartScript(path, containerId) {
+    console.log('Path:', path);
+    
+    // Create a new script element
     const script = document.createElement('script');
-    script.src = '/api/game/start';  // Fetching the game controller script
+    script.src = '/api' + path + '/start';  // Fetching the controller script from the microservice
     script.onload = () => {
-        console.log('Game controller script loaded and executed.');
+        console.log('Page-specific start script loaded and executed.');
     };
     script.onerror = (error) => {
-        console.error('Error loading game controller script:', error);
+        console.error('Error loading start script:', error);
     };
 
-    const gameContainer = document.getElementById('gameContainer');  // Ensure the gameContainer exists
-    if (gameContainer) {
-        gameContainer.appendChild(script);  // Append the script to the gameContainer
+    // Ensure the container exists before appending the script
+    const targetContainer = document.getElementById(containerId);
+    if (targetContainer) {
+        targetContainer.appendChild(script);  // Append the script to the specific container
     } else {
-        console.error('Game container not found!');
+        console.error(`Container with ID '${containerId}' not found!`);
     }
 }
 
@@ -37,11 +41,29 @@ function router() {
             .then(htmlContent => {
                 app.innerHTML = htmlContent;
 
-                // Ensure the gameContainer exists in the fetched HTML before appending the script
-                loadGameController();
+                // Dynamically load the game controller script after loading the HTML
+                pageStartScript(path, 'gameContainer');  // Target the game container specifically
             })
             .catch(error => {
                 console.error('Error loading page:', error);
+            });
+    } else if (path === '/another-page') {
+        // Example: Handle another page with a different microservice or logic
+        fetch('/api/another-service/endpoint')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load another page');
+                }
+                return response.text();
+            })
+            .then(htmlContent => {
+                app.innerHTML = htmlContent;
+
+                // Dynamically load the page start script for another page
+                pageStartScript(path, 'anotherContainer');  // Use another specific container
+            })
+            .catch(error => {
+                console.error('Error loading another page:', error);
             });
     } else {
         // 404 - Page Not Found
