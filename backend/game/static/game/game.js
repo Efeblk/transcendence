@@ -9,7 +9,14 @@ class Game {
 
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize(gameConfig.renderer.width, gameConfig.renderer.height);
-        document.body.appendChild(this.renderer.domElement);
+
+        // Append the renderer to the gameContainer instead of the body
+        const gameContainer = document.getElementById('gameContainer');
+        if (gameContainer) {
+            gameContainer.appendChild(this.renderer.domElement);
+        } else {
+            console.error('Game container not found');
+        }
 
         this.table = new Table(this.scene, texturePath);
         this.player = new Player(this.scene, gameConfig.paddle.positionZ.player, gameConfig.paddle.color.player);
