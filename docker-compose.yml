@@ -9,7 +9,22 @@ services:
       POSTGRES_DB: user_db
     volumes:
       - user_db_data:/var/lib/postgresql/data
-
+  
+  # PostgreSQL Database Service
+  game_db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: game_db
+    volumes:
+      - game_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
   user_service:
     build: ./user_service
     command: python manage.py runserver 0.0.0.0:8001
@@ -22,23 +37,8 @@ services:
     environment:
       DATABASE_URL: postgres://postgres_user:postgres_password@user_db:5432/user_db
 
-  # PostgreSQL Database Service
-  db:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: game_db
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # Django (Backend) Service
-  game:
+  game_service:
     build: ./backend
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
@@ -46,10 +46,10 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      db:
+      game_db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgres://postgres:password@db:5432/game_db
+      DATABASE_URL: postgres://postgres:password@game_db:5432/game_db
     entrypoint: /app/entrypoint.sh  # This will trigger the entrypoint script
 
   # Nginx Service (Merged with Frontend)
@@ -60,11 +60,11 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - game
+      - game_service
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf  # Ensure the correct config is mounted
       - ./backend/staticfiles:/usr/share/nginx/html/staticfiles
 
 volumes:
   user_db_data:
-  pgdata:
+  game_db:

@@ -81,7 +81,7 @@ DATABASES = {
         'NAME': 'game_db',
         'USER': 'postgres',
         'PASSWORD': 'password',
-        'HOST': 'db',  # The service name from docker-compose
+        'HOST': 'game_db',  # The service name from docker-compose
         'PORT': '5432',
     }
 }
