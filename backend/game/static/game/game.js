@@ -10,7 +10,6 @@ class Game {
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize(gameConfig.renderer.width, gameConfig.renderer.height);
 
-        // Append the renderer to the gameContainer instead of the body
         const gameContainer = document.getElementById('gameContainer');
         if (gameContainer) {
             gameContainer.appendChild(this.renderer.domElement);
@@ -30,13 +29,12 @@ class Game {
         this.aiScore = 0;
         this.maxScore = 3;
 
-        this.isRunning = true;
+        this.isRunning = false;  // Initially set to false
 
-        // Initialize the GameAPI class
         this.api = new GameAPI();
-
-        // Start the game animation loop
-        this.animate();
+        
+        // Initialize the GameUI class with both start and restart callbacks
+        this.gameUI = new GameUI(this.start.bind(this), this.reset.bind(this));
     }
 
     setupLights() {
@@ -64,16 +62,6 @@ class Game {
 
         this.checkCollisions();
         this.checkScore();
-
-        if (document.getElementById('ballSpeed')) {
-            document.getElementById('ballSpeed').innerText = this.ball.speed.toFixed(2);
-        }
-        if (document.getElementById('playerScore')) {
-            document.getElementById('playerScore').innerText = this.playerScore;
-        }
-        if (document.getElementById('aiScore')) {
-            document.getElementById('aiScore').innerText = this.aiScore;
-        }
 
         this.renderer.render(this.scene, this.camera);
     }
@@ -117,7 +105,6 @@ class Game {
         this.isRunning = false;
         let winner = this.playerScore > this.aiScore ? "Player" : "AI";
 
-        // Use the GameAPI class to save the game result
         this.api.saveGameData('Player 1', this.aiScore, this.playerScore, winner)
             .then(data => {
                 console.log('Game result saved:', data);
@@ -126,9 +113,7 @@ class Game {
                 console.error('Error saving game result:', error);
             });
 
-        if (document.getElementById('restartButton')) {
-            document.getElementById('restartButton').style.display = 'block';
-        }
+        this.gameUI.showRestartButton();  // Show the restart button when game ends
     }
 
     reset() {
@@ -138,15 +123,14 @@ class Game {
         this.playerScore = 0;
         this.aiScore = 0;
 
-        if (document.getElementById('winner')) {
-            document.getElementById('winner').innerText = '';
-        }
-
         this.isRunning = true;
+        this.gameUI.hideRestartButton();  // Hide the restart button when the game restarts
         this.animate();
     }
 
     start() {
+        console.log('Game started...');
+        this.isRunning = true;
         this.animate();
     }
 }

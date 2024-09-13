@@ -28,7 +28,6 @@ def game_starter_script(request):
         
         // Automatically initialize the game using the Game class
         const game = new Game(texturePath);
-        game.start();
 
         console.log("Game started successfully.");
     })();
