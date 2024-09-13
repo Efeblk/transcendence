@@ -129,6 +129,10 @@ class Game {
     }
 
     start() {
+        if (this.isRunning) {
+            console.log('Game is already running!');
+            return;
+        }
         console.log('Game started...');
         this.isRunning = true;
         this.animate();

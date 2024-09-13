@@ -1,61 +1,62 @@
 class GameUI {
-    constructor(startGameCallback, restartGameCallback) {
-        this.cssRenderer = new THREE.CSS3DRenderer();
-        this.cssRenderer.setSize(window.innerWidth, window.innerHeight);
+    constructor(startCallback, resetCallback) {
+        // Save the start and reset callbacks
+        this.startCallback = startCallback;
+        this.resetCallback = resetCallback;
 
-        // Find the game container where the UI will be added
-        const gameContainer = document.getElementById('gameContainer');
-        if (gameContainer) {
-            gameContainer.appendChild(this.cssRenderer.domElement);
-        } else {
-            console.error('Game container not found');
-        }
-
-        // Create Start button
-        this.startButton = document.createElement('button');
-        this.startButton.innerText = 'Start Game';
-        this.startButton.className = 'start-button';
-        this.startButton.style.position = 'absolute';
-        this.startButton.style.top = '50%';
-        this.startButton.style.left = '50%';
-        this.startButton.style.transform = 'translate(-50%, -50%)';
-        this.startButton.addEventListener('click', () => {
-            startGameCallback();  // Call the start game method from Game class
-            this.hideStartButton();
-        });
-
-        document.body.appendChild(this.startButton);
-
-        // Create Restart button (initially hidden)
-        this.restartButton = document.createElement('button');
-        this.restartButton.innerText = 'Restart Game';
-        this.restartButton.className = 'restart-button';
-        this.restartButton.style.position = 'absolute';
-        this.restartButton.style.top = '50%';
-        this.restartButton.style.left = '50%';
-        this.restartButton.style.transform = 'translate(-50%, -50%)';
-        this.restartButton.style.display = 'none';  // Hide by default
-        this.restartButton.addEventListener('click', () => {
-            restartGameCallback();  // Call the reset game method from Game class
-            this.hideRestartButton();
-        });
-
-        document.body.appendChild(this.restartButton);
+        // Create and store references to the buttons
+        this.createStartButton();
+        this.createRestartButton();
     }
 
-    hideStartButton() {
-        this.startButton.style.display = 'none';
+    createStartButton() {
+        // Create the start button
+        this.playButton = document.createElement('button');
+        this.playButton.innerText = 'Start Game';
+        this.playButton.className = 'game-button start-button';  // Add a class for styling
+        this.playButton.onclick = () => {
+            this.startCallback();
+            this.hidePlayButton();
+        };
+
+        // Insert the button into the DOM
+        const gameContainer = document.getElementById('gameContainer');
+        if (gameContainer) {
+            gameContainer.appendChild(this.playButton);
+        }
+    }
+
+    createRestartButton() {
+        // Create the restart button (initially hidden)
+        this.restartButton = document.createElement('button');
+        this.restartButton.innerText = 'Restart Game';
+        this.restartButton.className = 'game-button restart-button';  // Add a class for styling
+        this.restartButton.style.display = 'none';  // Initially hidden
+        this.restartButton.onclick = () => {
+            this.resetCallback();
+        };
+
+        // Insert the button into the DOM
+        const gameContainer = document.getElementById('gameContainer');
+        if (gameContainer) {
+            gameContainer.appendChild(this.restartButton);
+        }
     }
 
     showRestartButton() {
-        this.restartButton.style.display = 'block';
+        this.restartButton.style.display = 'block';  // Show the restart button
     }
 
     hideRestartButton() {
-        this.restartButton.style.display = 'none';
+        this.restartButton.style.display = 'none';  // Hide the restart button
+    }
+
+    hidePlayButton() {
+        this.playButton.style.display = 'none';  // Hide the play button after the game starts
     }
 
     render(camera) {
-        this.cssRenderer.render(this.scene, camera);
+        // If you need to update or render any UI elements dynamically, do it here.
+        // Currently, the buttons are static.
     }
 }
