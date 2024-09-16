@@ -19,7 +19,7 @@ class Game {
 
         this.table = new Table(this.scene, texturePath);
         this.player = new Player(this.scene, gameConfig.paddle.positionZ.player, gameConfig.paddle.color.player);
-        this.aiPaddle = new Paddle(this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai);
+        this.aiPaddle = new AIpaddle(this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai);
         this.ball = new Ball(this.scene);
 
         this.setupLights();
@@ -58,7 +58,7 @@ class Game {
 
         this.player.update();
         this.ball.update();
-        this.updateAIPaddle();
+        this.aiPaddle.update(this.ball);
 
         this.checkCollisions();
         this.checkScore();
@@ -66,22 +66,16 @@ class Game {
         this.renderer.render(this.scene, this.camera);
     }
 
-    updateAIPaddle() {
-        const aiSpeed = 0.05;
-        const ballX = this.ball.mesh.position.x;
-        const aiPaddleX = this.aiPaddle.mesh.position.x;
-
-        this.aiPaddle.mesh.position.x += (ballX - aiPaddleX) * aiSpeed;
-    }
-
     checkCollisions() {
         if (this.ball.isCollidingWith(this.player.getPaddle())) {
             this.player.hitBall(this.ball);
             this.ball.bounce();
+            console.log('Player hit the ball, speed:', this.ball.speed);
         }
 
         if (this.ball.isCollidingWith(this.aiPaddle)) {
             this.ball.bounce();
+            console.log('AI hit the ball, speed:', this.ball.speed);
         }
     }
 
@@ -122,17 +116,30 @@ class Game {
         this.aiPaddle.mesh.position.x = 0;
         this.playerScore = 0;
         this.aiScore = 0;
-
-        this.isRunning = true;
-        this.gameUI.hideRestartButton();  // Hide the restart button when the game restarts
-        this.animate();
     }
 
-    start() {
+    start(difficulty) {
         if (this.isRunning) {
             console.log('Game is already running!');
             return;
         }
+        switch (difficulty) {
+            case 'easy':
+                this.aiPaddle.speed = gameConfig.paddle.movementSpeed.easyAI;
+                break;
+            case 'medium':
+                this.aiPaddle.speed = gameConfig.paddle.movementSpeed.mediumAI;
+                break;
+            case 'hard':
+                this.aiPaddle.speed = gameConfig.paddle.movementSpeed.hardAI;
+                break;
+            default:
+                break;
+        }
+        console.log("Game started in ", difficulty, " mode");
+        console.log("AI speed: ", this.aiPaddle.speed);
+        console.log('game started, ball speed', this.ball.speed);
+        this.reset();
         console.log('Game started...');
         this.isRunning = true;
         this.animate();

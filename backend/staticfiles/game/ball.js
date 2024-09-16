@@ -18,13 +18,13 @@ class Ball {
         this.mesh.position.set(0, gameConfig.paddle.positionY, 0);  // Start the ball at the same Y as the paddle
         scene.add(this.mesh);
 
-        this.speed = 0.5;
+        this.speed = gameConfig.ball.speed;  // Initial speed of the ball
         this.direction = { x: 0.02, z: 0.05 };  // Initial direction of the ball
-        this.spin = 0;  // Introduce a spin property
-        this.maxSpeed = 1;  // Set a maximum speed to avoid excessive speed
+        this.spin = gameConfig.ball.spin;  // Introduce a spin property
+        this.maxSpeed = gameConfig.ball.maxSpeed;  // Set a maximum speed to avoid excessive speed
 
-        this.colorChangeSpeed = 0.02;  // Speed of color change
-        this.colorOffset = 0;  // Offset for color oscillation
+        this.colorChangeSpeed = gameConfig.ball.colorChangeSpeed;  // Speed of color change
+        this.colorOffset = gameConfig.ball.colorOffset;  // Offset for color oscillation
     }
 
     applySpin(amount) {
@@ -74,8 +74,8 @@ class Ball {
     reset() {
         this.mesh.position.set(0, gameConfig.paddle.positionY, 0);
         this.direction = { x: 0.02, z: 0.05 };  // Reset the ball direction and speed
-        this.speed = 0.5;
-        this.spin = 0;  // Reset the spin
+        this.speed = gameConfig.ball.speed;
+        this.spin = gameConfig.ball.spin;  // Reset the spin
     }
 
     isOutOfBounds() {
