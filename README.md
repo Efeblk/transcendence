@@ -19,3 +19,5 @@ Fault Isolation: If the game logic fails or needs to be updated, having the data
 Maintenance: Keeping the game logic and database separate allows for easier updates, debugging, and management. It’s easier to optimize each service individually when they are decoupled.
 
 So, while merging might reduce the number of containers, the trade-offs in scalability, isolation, and maintainability outweigh the performance benefits in most cases. You should aim to keep them separate unless you have strong reasons to compromise on the benefits of microservice architecture.
+
+http://ip-of-vm  : sanal makinenin ip adresini girerek local bilgisayardan bağlanabilirsiniz. sanal makinemde bu komutu girdim: sudo ufw allow 'Nginx Full'
