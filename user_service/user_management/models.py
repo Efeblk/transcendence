@@ -14,8 +14,5 @@ class Users(models.Model):
     user_created_on = models.DateTimeField(auto_now_add=True)
     user_updated_on = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        db_table = 'users'
-
     def __str__(self):
         return f"${self.user_id} ${self.user_name}"
