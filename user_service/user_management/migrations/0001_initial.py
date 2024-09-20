@@ -2,10 +2,10 @@
 
 from django.db import migrations, models
 
-
 class Migration(migrations.Migration):
 
     initial = True
+
 
     dependencies = [
     ]
@@ -24,8 +24,5 @@ class Migration(migrations.Migration):
                 ('user_created_on', models.DateTimeField(auto_now_add=True)),
                 ('user_updated_on', models.DateTimeField(auto_now=True)),
             ],
-            options={
-                'db_table': 'users',
-            },
         ),
     ]

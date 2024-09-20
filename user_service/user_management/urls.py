@@ -7,6 +7,6 @@ from .views import UsersViewSet, profile_view
 
 #urlpatterns = router.urls
 urlpatterns = [
-    path('users-data/', UsersViewSet.as_view(), name='users-data'),
+    path('users-data/', UsersViewSet.as_view(), name='users-data-list'),
     path('profile/', profile_view, name='profile'),
 ]

@@ -13,6 +13,11 @@ services:
       - user_db_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   
   # PostgreSQL Database Service
   game_db:
@@ -35,16 +40,18 @@ services:
     build: ./user_service
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./user_service:/app
+      - ./user_service:/app2
     ports:
       - "8001:8000"
     depends_on:
-      - user_db
+      user_db:
+        condition: service_healthy
     networks:
       - app-network
     environment:
       DATABASE_URL: postgres://postgres_user:postgres_password@user_db:5432/user_db
-
+    entrypoint: /app2/entrypoint.sh  # This will trigger the entrypoint script
+    
   # Django (Backend) Service
   game_service:
     build: ./backend

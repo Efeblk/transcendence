@@ -15,4 +15,4 @@ class Users(models.Model):
     user_updated_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"${self.user_id} ${self.user_name}"
+        return f"User - ${self.user_id} ${self.user_name}"
