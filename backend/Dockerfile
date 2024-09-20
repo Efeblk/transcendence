@@ -25,6 +25,3 @@ RUN chmod +x /app/entrypoint.sh
 
 # Define the entrypoint to run migrations and collect static files
 ENTRYPOINT ["/app/entrypoint.sh"]
-
-# Default command to run Django server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

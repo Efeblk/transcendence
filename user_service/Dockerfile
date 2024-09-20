@@ -20,10 +20,6 @@ EXPOSE 8001
 
 COPY ./entrypoint.sh /app2/entrypoint.sh
 RUN chmod +x /app2/entrypoint.sh
-RUN sed -i '1s|^|#!/bin/sh\n|' /app2/entrypoint.sh
 
 # Define the entrypoint to run migrations and collect static files
 ENTRYPOINT ["/app2/entrypoint.sh"]
-
-# Default command to run Django server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

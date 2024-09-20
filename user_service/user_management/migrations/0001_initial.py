@@ -19,6 +19,7 @@ class Migration(migrations.Migration):
                 ('user_nick', models.CharField(max_length=50)),
                 ('user_email', models.EmailField(max_length=254)),
                 ('user_password', models.CharField(max_length=50)),
+                ('user_level', models.DecimalField(max_digits=5, decimal_places=2)),
                 ('user_type', models.CharField(max_length=50)),
                 ('user_status', models.CharField(max_length=50)),
                 ('user_created_on', models.DateTimeField(auto_now_add=True)),
