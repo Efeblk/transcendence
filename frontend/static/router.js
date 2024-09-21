@@ -47,7 +47,93 @@ function router() {
             .catch(error => {
                 console.error('Error loading page:', error);
             });
-    } else if (path === '/another-page') {
+    } else if (path === '/login') {
+        app.innerHTML = `
+        <h1>Login</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+        <div id="error-message" class="text-danger"></div>
+        
+        <!-- Add Sign Up button -->
+        <p>Don't have an account? <button id="signupBtn" class="btn btn-secondary">Sign Up</button></p>
+        `;
+        
+        // Add event listener for form submission
+        const loginForm = document.getElementById('loginForm');
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form submission
+
+            // Simple mock login process
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === 'user' && password === 'password') {
+                alert('Login successful');
+                window.location.href = '/'; // Redirect to home after login
+            } else {
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.textContent = 'Invalid username or password.';
+            }
+        });
+        const signupBtn = document.getElementById('signupBtn');
+        signupBtn.addEventListener('click', function() {
+            // Redirect or dynamically load the sign-up form
+            window.location.href = '/signup';
+        });
+    } else if (path === '/signup') {
+        // Sign Up page content
+        app.innerHTML = `
+            <h1>Sign Up</h1>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="newUsername">Username</label>
+                    <input type="text" id="newUsername" name="newUsername" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">Password</label>
+                    <input type="password" id="newPassword" name="newPassword" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Sign Up</button>
+            </form>
+        `;
+    
+        // Handle sign-up form submission
+        const signupForm = document.getElementById('signupForm');
+        signupForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form submission
+    
+            // Mock sign-up logic (you can replace this with actual logic)
+            const newUsername = document.getElementById('newUsername').value;
+            const newPassword = document.getElementById('newPassword').value;
+    
+            alert('Account created for ' + newUsername);
+            window.location.href = '/login'; // Redirect to login after signing up
+        });
+    } else if (path === '/profile') {
+        fetch('/api/users/profile')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load game page');
+                }
+                return response.text();
+            })
+            .then(htmlContent => {
+                app.innerHTML = htmlContent;
+
+            })
+            .catch(error => {
+                console.error('Error loading page:', error);
+            });
+    }else if (path === '/another-page') {
         // Example: Handle another page with a different microservice or logic
         fetch('/api/another-service/endpoint')
             .then(response => {

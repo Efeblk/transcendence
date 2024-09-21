@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile Page</title>
+    <title>Gamer Profile Page</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,6 +35,23 @@
             font-size: 16px;
             color: #555;
         }
+        .stats, .friends-list {
+            text-align: left;
+            margin-top: 20px;
+        }
+        .stats h2, .friends-list h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        .stats p, .friends-list p {
+            font-size: 16px;
+            margin: 5px 0;
+        }
+        .online-status {
+            margin-top: 10px;
+            font-weight: bold;
+            color: green; /* Green for online */
+        }
         .social-links a {
             text-decoration: none;
             color: #007BFF;
@@ -50,12 +67,24 @@
 
     <div class="profile-container">
         <img src="profile-pic.jpg" alt="Profile Picture" class="profile-picture">
-        <h1>John Doe</h1>
-        <p>Web Developer | JavaScript Enthusiast</p>
+        <h1>Gamer Name</h1>
+        <p>Level 15 | Hardcore Gamer</p>
 
-        <div class="social-links">
-            <a href="https://github.com/johndoe" target="_blank">GitHub</a>
-            <a href="https://linkedin.com/in/johndoe" target="_blank">LinkedIn</a>
+        <div class="online-status">Status: Online</div>
+
+        <div class="stats">
+            <h2>Player Stats</h2>
+            <p><strong>Level:</strong> 15</p>
+            <p><strong>Games Won:</strong> 120</p>
+            <p><strong>Games Lost:</strong> 45</p>
+            <p><strong>Win Rate:</strong> 72%</p>
+        </div>
+
+        <div class="friends-list">
+            <h2>Friends</h2>
+            <p>1. PlayerOne</p>
+            <p>2. PlayerTwo</p>
+            <p>3. PlayerThree</p>
         </div>
     </div>
 
