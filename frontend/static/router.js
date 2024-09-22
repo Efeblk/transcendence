@@ -37,6 +37,42 @@ function getCookie(name) {
     return cookieValue;
 }
 
+let isLoggedIn = false; // User authentication state
+// Function to update the navigation based on login state
+function updateNav() {
+    const loginLink = document.querySelector('a[href="/login"]');
+    const profileLink = document.createElement('a');
+
+    profileLink.href = "/profile";
+    profileLink.textContent = "Profile";
+    profileLink.classList.add('nav-link');
+
+    if (isLoggedIn) {
+        loginLink.replaceWith(profileLink);
+    } else {
+        if (profileLink) {
+            profileLink.remove();
+        }
+    }
+}
+
+async function loadProfile() {
+    fetch('/api/users/profile')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load game page');
+            }
+            return response.text();
+        })
+        .then(htmlContent => {
+            app.innerHTML = htmlContent;
+
+        })
+        .catch(error => {
+            console.error('Error loading page:', error);
+        });
+}
+
 
 // Router function to handle navigation
 function router() {
@@ -103,8 +139,10 @@ function router() {
             const data = await response.json();
 
             if (data.success) {
-                alert('Login successful');
-                window.location.href = '/'; // Redirect to home after login
+                isLoggedIn = true;
+                updateNav();
+                alert('Login successful!');
+                loadProfile();
             } else {
                 const errorMessage = document.getElementById('error-message');
                 errorMessage.textContent = data.message;
@@ -169,21 +207,6 @@ function router() {
                 alert(data.message); // Display error message
             }
         });
-    } else if (path === '/profile') {
-        fetch('/api/users/profile')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to load game page');
-                }
-                return response.text();
-            })
-            .then(htmlContent => {
-                app.innerHTML = htmlContent;
-
-            })
-            .catch(error => {
-                console.error('Error loading page:', error);
-            });
     }else if (path === '/another-page') {
         // Example: Handle another page with a different microservice or logic
         fetch('/api/another-service/endpoint')
