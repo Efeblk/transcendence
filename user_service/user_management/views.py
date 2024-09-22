@@ -3,7 +3,8 @@ from rest_framework import generics
 from django.shortcuts import render
 from .serializers import UsersSerializer
 from django.http import JsonResponse
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth import authenticate
 import json
 
 class UsersViewSet(generics.ListCreateAPIView):
@@ -37,6 +38,26 @@ def signup(request):
         user.save()
 
         return JsonResponse({'success': True, 'message': 'User created successfully!'})
+
+def login(request):
+    if request.method == 'POST':
+        body = json.loads(request.body)
+        username = body.get('username')
+        password = body.get('password')
+
+        try:
+            user = Users.objects.get(user_nick=username)
+        except Users.DoesNotExist:
+            return JsonResponse({'message': 'Invalid username or password.'}, status=400)
+
+        # Check the password
+        if check_password(password, user.user_password):
+            # Optionally, create a session or return a token
+            return JsonResponse({'message': 'Login successful'}, status=200)
+        else:
+            return JsonResponse({'message': 'Invalid username or password.'}, status=400)
+
+
 
 def profile_view(request):
     return render(request, 'profile/profile.html')

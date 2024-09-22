@@ -80,32 +80,41 @@ function router() {
         </form>
         <div id="error-message" class="text-danger"></div>
         
-        <!-- Add Sign Up button -->
         <p>Don't have an account? <button id="signupBtn" class="btn btn-secondary">Sign Up</button></p>
         `;
-        
-        // Add event listener for form submission
+    
         const loginForm = document.getElementById('loginForm');
-        loginForm.addEventListener('submit', function(event) {
+        loginForm.addEventListener('submit', async function(event) {
             event.preventDefault(); // Prevent form submission
-
-            // Simple mock login process
+    
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+    
+            // Make API call to check user credentials
+            const response = await fetch('/api/users/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') // Include the CSRF token
+                },
+                body: JSON.stringify({ username, password })
+            });
 
-            if (username === 'user' && password === 'password') {
+            const data = await response.json();
+
+            if (data.success) {
                 alert('Login successful');
                 window.location.href = '/'; // Redirect to home after login
             } else {
                 const errorMessage = document.getElementById('error-message');
-                errorMessage.textContent = 'Invalid username or password.';
+                errorMessage.textContent = data.message;
             }
         });
+    
         const signupBtn = document.getElementById('signupBtn');
         signupBtn.addEventListener('click', function() {
-            // Redirect or dynamically load the sign-up form
-            window.location.href = '/signup';
-        });
+            window.location.href = '/signup'; // Redirect to sign-up page
+        });    
     } else if (path === '/signup') {
         // Sign Up page content
         app.innerHTML = `
