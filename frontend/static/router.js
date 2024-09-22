@@ -95,6 +95,14 @@ function router() {
             <h1>Sign Up</h1>
             <form id="signupForm">
                 <div class="form-group">
+                    <label for="newName">Name</label>
+                    <input type="text" id="newName" name="newName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="newEmail">Email</label>
+                    <input type="text" id="newEmail" name="newEmail" class="form-control" required>
+                </div>
+                <div class="form-group">
                     <label for="newUsername">Username</label>
                     <input type="text" id="newUsername" name="newUsername" class="form-control" required>
                 </div>
@@ -108,15 +116,32 @@ function router() {
     
         // Handle sign-up form submission
         const signupForm = document.getElementById('signupForm');
-        signupForm.addEventListener('submit', function(event) {
+        signupForm.addEventListener('submit', async function(event) {
             event.preventDefault(); // Prevent form submission
     
             // Mock sign-up logic (you can replace this with actual logic)
+            const newName = document.getElementById('newName').value;
+            const newEmail = document.getElementById('newEmail').value;
             const newUsername = document.getElementById('newUsername').value;
             const newPassword = document.getElementById('newPassword').value;
-    
-            alert('Account created for ' + newUsername);
-            window.location.href = '/login'; // Redirect to login after signing up
+
+            const response = await fetch('/api/users/signup/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    //'X-CSRFToken': getCookie('csrftoken') // Include the CSRF token
+                },
+                body: JSON.stringify({ newName, newEmail, newUsername, newPassword })
+            });
+        
+            const data = await response.json();
+        
+            if (data.success) {
+                alert('Account created for ' + newUsername);
+                window.location.href = '/login'; // Redirect to login after signing up
+            } else {
+                alert(data.message); // Display error message
+            }
         });
     } else if (path === '/profile') {
         fetch('/api/users/profile')
