@@ -1,13 +1,11 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 
-class Users(models.Model):
-    user_id = models.AutoField(primary_key=True)
+class Users(AbstractUser):
     user_name = models.CharField(max_length=50)
-    user_nick = models.CharField(max_length=50)
     user_email = models.EmailField()
-    user_password = models.CharField(max_length=128)
     user_level = models.DecimalField(max_digits=5, decimal_places=2)
     user_type = models.CharField(max_length=50)
     user_status = models.CharField(max_length=50)
@@ -15,4 +13,4 @@ class Users(models.Model):
     user_updated_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"User - ${self.user_id} ${self.user_name}"
+        return f"User - ${self.id} ${self.user_name}"

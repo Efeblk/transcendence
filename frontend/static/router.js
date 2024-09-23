@@ -56,23 +56,6 @@ function updateNav() {
     }
 }
 
-async function loadProfile() {
-    fetch('/api/users/profile')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to load game page');
-            }
-            return response.text();
-        })
-        .then(htmlContent => {
-            app.innerHTML = htmlContent;
-
-        })
-        .catch(error => {
-            console.error('Error loading page:', error);
-        });
-}
-
 
 // Router function to handle navigation
 function router() {
@@ -131,7 +114,6 @@ function router() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken') // Include the CSRF token
                 },
                 body: JSON.stringify({ username, password })
             });
@@ -140,9 +122,10 @@ function router() {
 
             if (data.success) {
                 isLoggedIn = true;
+                localStorage.setItem('access_token', data.access_token);
                 updateNav();
                 alert('Login successful!');
-                loadProfile();
+                window.location.href = '/profile';
             } else {
                 const errorMessage = document.getElementById('error-message');
                 errorMessage.textContent = data.message;
@@ -207,6 +190,32 @@ function router() {
                 alert(data.message); // Display error message
             }
         });
+    }else if (path === '/profile'){
+        const token = localStorage.getItem('access_token');
+        fetch('/api/users/profile', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}` // Include the token here
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load profile');
+                }
+                return response.json();
+            })
+            .then(data => {
+                app.innerHTML = `
+                <h1>User Profile</h1>
+                <p>ID: ${data.id}</p>
+                <p>Username: ${data.username}</p>
+                <p>Email: ${data.email}</p>
+                <p>Level: ${data.level}</p>
+                `;
+            })
+            .catch(error => {
+                console.error('Error loading profile:', error);
+            });
     }else if (path === '/another-page') {
         // Example: Handle another page with a different microservice or logic
         fetch('/api/another-service/endpoint')
@@ -250,3 +259,23 @@ window.addEventListener('load', function () {
 
 // Handle browser back/forward buttons
 window.addEventListener('popstate', router);
+
+function fetchProtectedData(url) {
+    const token = localStorage.getItem('access_token');
+
+    return fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`  // Attach token in Authorization header
+        }
+    });
+}
+
+fetchProtectedData('/api/users/profile')
+    .then(response => response.json())
+    .then(data => {
+        console.log('Profile Data:', data);
+    })
+    .catch(err => {
+        console.error('Error fetching profile:', err);
+    });
