@@ -37,24 +37,34 @@ function getCookie(name) {
     return cookieValue;
 }
 
-let isLoggedIn = false; // User authentication state
-// Function to update the navigation based on login state
 function updateNav() {
     const loginLink = document.querySelector('a[href="/login"]');
     const profileLink = document.createElement('a');
-
+    
     profileLink.href = "/profile";
     profileLink.textContent = "Profile";
     profileLink.classList.add('nav-link');
 
+    // Check if the user is logged in by checking the access token
+    const isLoggedIn = localStorage.getItem('access_token') !== null;
+
     if (isLoggedIn) {
-        loginLink.replaceWith(profileLink);
+        // Replace "Login" with "Profile"
+        if (loginLink) {
+            loginLink.replaceWith(profileLink);
+        }
     } else {
-        if (profileLink) {
-            profileLink.remove();
+        // If logged out, bring back the "Login" link if it's missing
+        if (!loginLink) {
+            const newLoginLink = document.createElement('a');
+            newLoginLink.href = "/login";
+            newLoginLink.textContent = "Login";
+            newLoginLink.classList.add('nav-link');
+            profileLink.replaceWith(newLoginLink);
         }
     }
 }
+
 
 
 // Router function to handle navigation
@@ -121,7 +131,6 @@ function router() {
             const data = await response.json();
 
             if (data.success) {
-                isLoggedIn = true;
                 localStorage.setItem('access_token', data.access_token);
                 updateNav();
                 alert('Login successful!');
@@ -207,11 +216,18 @@ function router() {
             .then(data => {
                 app.innerHTML = `
                 <h1>User Profile</h1>
-                <p>ID: ${data.id}</p>
+                <img src="${data.profile_picture_url}" alt="Profile Picture" style="width: 200px; height: 150px;">
                 <p>Username: ${data.username}</p>
                 <p>Email: ${data.email}</p>
                 <p>Level: ${data.level}</p>
+                <button id="LogOut" class="btn btn-secondary">LogOut</button>
                 `;
+                
+                console.log(data.profile_picture_url);
+                const LogOut = document.getElementById('LogOut');
+                LogOut.addEventListener('click', function() {
+                    logout();
+                }); 
             })
             .catch(error => {
                 console.error('Error loading profile:', error);
@@ -259,6 +275,20 @@ window.addEventListener('load', function () {
 
 // Handle browser back/forward buttons
 window.addEventListener('popstate', router);
+
+document.addEventListener('DOMContentLoaded', function() {
+    const accessToken = localStorage.getItem('access_token');
+    if (accessToken) {
+        // Token exists, assume user is logged in
+        updateNav();  // Call updateNav() to update the navigation bar
+    }
+});
+
+function logout() {
+    localStorage.removeItem('access_token');  // Remove the token
+    updateNav();  // Reset navigation to the logged-out state
+    window.location.href = '/login';  // Redirect to login page
+}
 
 function fetchProtectedData(url) {
     const token = localStorage.getItem('access_token');

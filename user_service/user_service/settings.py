@@ -57,6 +57,11 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 }
 
+import os
+
+MEDIA_URL = '/media/'  # URL to access the media files
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 AUTH_USER_MODEL = 'user_management.Users'
 
 MIDDLEWARE = [

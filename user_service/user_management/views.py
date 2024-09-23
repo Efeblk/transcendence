@@ -77,5 +77,5 @@ def login(request):
 @permission_classes([IsAuthenticated])
 def profile_view(request):
     user = request.user
-    return JsonResponse({'user_id': user.id, 'username': user.username, 'email': user.user_email, 'level': user.user_level,})
+    return JsonResponse({'user_id': user.id, 'username': user.username, 'email': user.user_email, 'level': user.user_level, 'profile_picture_url': user.profile_picture.url, })
 
