@@ -54,10 +54,10 @@ services:
     
   # Django (Backend) Service
   game_service:
-    build: ./backend
+    build: ./game_service
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./backend:/app
+      - ./game_service:/app
     ports:
       - "8000:8000"
     networks:
