@@ -17,6 +17,12 @@ class UsersViewSet(generics.ListCreateAPIView):
     queryset = Users.objects.all()
     serializer_class = UsersSerializer
 
+def signup_view(request):
+    return render(request, 'user_service/signup.html')
+
+def login_view(request):
+    return render(request, 'user_service/login.html')
+
 def signup(request):
     if request.method == 'POST':
         data = json.loads(request.body)
