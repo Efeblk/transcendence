@@ -130,7 +130,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Additional locations the staticfiles app will traverse to look for static files
 STATICFILES_DIRS = [
-    BASE_DIR / "game/static",  # Assuming game/static is where your custom static files are stored
+    BASE_DIR / "game_service/static",  # Assuming game/static is where your custom static files are stored
 ]
 
 # Default primary key field type
