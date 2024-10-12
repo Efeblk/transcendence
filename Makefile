@@ -4,7 +4,7 @@ all:
 down:
 	@docker-compose -f docker-compose.yml down
 
-re: clean
+re:
 	@docker-compose -f docker-compose.yml up --build
 
 clean:
@@ -12,7 +12,6 @@ clean:
 	docker rm $$(docker ps -qa);\
 	docker volume rm $$(docker volume ls -q);\
 	docker network rm $$(docker network ls -q)
-# docker rmi -f $$(docker images -qa);\
 
 # docker rmi -f $$(docker images -qa);\
 
