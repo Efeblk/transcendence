@@ -1,16 +1,18 @@
+import json
 from .models import Users
 from rest_framework import generics
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .serializers import UsersSerializer
 from django.http import JsonResponse
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth import authenticate
-import json
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view, permission_classes
+from django.contrib.auth.decorators import login_required
+from rest_framework.decorators import api_view, permission_classes, renderer_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.renderers import TemplateHTMLRenderer
 
 
 class UsersViewSet(generics.ListCreateAPIView):
@@ -22,6 +24,7 @@ def signup_view(request):
 
 def login_view(request):
     return render(request, 'user_service/login.html')
+    
 
 def signup(request):
     if request.method == 'POST':
@@ -81,7 +84,30 @@ def login(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@renderer_classes([TemplateHTMLRenderer])
 def profile_view(request):
-    user = request.user
-    return JsonResponse({'user_id': user.id, 'username': user.username, 'email': user.user_email, 'level': user.user_level, 'profile_picture_url': user.profile_picture.url, })
+    context = {
+        'user': request.user  # Pass the logged-in user to the template
+    }
+    return Response(context, template_name='user_service/profile.html')
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_profile(request, username):
+    # Retrieve the user by their username
+    user = get_object_or_404(Users, username=username)
+    
+    return render(request, 'user_profile.html', {'profile_user': user})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@renderer_classes([TemplateHTMLRenderer])
+def search_people(request):
+    query = request.GET.get('q')  # 'q' will be the search input name
+    results = []
+
+    if query:
+        # Find all users whose username contains the search query (case-insensitive)
+        results = Users.objects.filter(username__icontains=query)
+    
+    return Response({'results': results, 'query': query}, template_name='user_service/search_results.html')

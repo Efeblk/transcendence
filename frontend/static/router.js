@@ -21,52 +21,6 @@ function pageStartScript(path, containerId) {
     }
 }
 
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-function updateNav() {
-    const loginLink = document.querySelector('a[href="/login"]');
-    const profileLink = document.createElement('a');
-    
-    profileLink.href = "/profile";
-    profileLink.textContent = "Profile";
-    profileLink.classList.add('nav-link');
-
-    // Check if the user is logged in by checking the access token
-    const isLoggedIn = localStorage.getItem('access_token') !== null;
-
-    if (isLoggedIn) {
-        // Replace "Login" with "Profile"
-        if (loginLink) {
-            loginLink.replaceWith(profileLink);
-        }
-    } else {
-        // If logged out, bring back the "Login" link if it's missing
-        if (!loginLink) {
-            const newLoginLink = document.createElement('a');
-            newLoginLink.href = "/login";
-            newLoginLink.textContent = "Login";
-            newLoginLink.classList.add('nav-link');
-            profileLink.replaceWith(newLoginLink);
-        }
-    }
-}
-
-
-
 // Router function to handle navigation
 function router() {
     const path = window.location.pathname;
@@ -94,52 +48,57 @@ function router() {
                 console.error('Error loading page:', error);
             });
     } else if (path === '/login') {
-        fetch('/api/users/login')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to load login page');
-                }
-                return response.text();
-            })
-            .then(htmlContent => {
-                app.innerHTML = htmlContent;
-
-                const loginForm = document.getElementById('loginForm');
-                loginForm.addEventListener('submit', async function(event) {
-                    event.preventDefault(); // Prevent form submission
-            
-                    const username = document.getElementById('username').value;
-                    const password = document.getElementById('password').value;
-            
-                    // Make API call to check user credentials
-                    const response = await fetch('/api/users/rq_login/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ username, password })
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        localStorage.setItem('access_token', data.access_token);
-                        updateNav();
-                        alert('Login successful!');
-                        window.location.href = '/profile';
-                    } else {
-                        const errorMessage = document.getElementById('error-message');
-                        errorMessage.textContent = data.message;
+        const token = localStorage.getItem('access_token');
+        if (token)
+            window.location.href = '/profile';
+        else
+        {
+            fetch('/api/users/login')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load login page');
                     }
-                });
-            
-                const signupBtn = document.getElementById('signupBtn');
-                signupBtn.addEventListener('click', function() {
-                    window.location.href = '/signup'; // Redirect to sign-up page
-                }); 
-            }).catch(error => { 
-                console.error('Error loading login page:', error); 
-            });    
+                    return response.text();
+                })
+                .then(htmlContent => {
+                    app.innerHTML = htmlContent;
+    
+                    const loginForm = document.getElementById('loginForm');
+                    loginForm.addEventListener('submit', async function(event) {
+                        event.preventDefault(); // Prevent form submission
+                
+                        const username = document.getElementById('username').value;
+                        const password = document.getElementById('password').value;
+                
+                        // Make API call to check user credentials
+                        const response = await fetch('/api/users/rq_login/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ username, password })
+                        });
+    
+                        const data = await response.json();
+    
+                        if (data.success) {
+                            localStorage.setItem('access_token', data.access_token);
+                            alert('Login successful!');
+                            window.location.href = '/profile';
+                        } else {
+                            const errorMessage = document.getElementById('error-message');
+                            errorMessage.textContent = data.message;
+                        }
+                    });
+                
+                    const signupBtn = document.getElementById('signupBtn');
+                    signupBtn.addEventListener('click', function() {
+                        window.location.href = '/signup'; // Redirect to sign-up page
+                    }); 
+                }).catch(error => { 
+                    console.error('Error loading login page:', error); 
+                });    
+        }
     } else if (path === '/signup') {
         fetch('/api/users/signup')
             .then(response => {
@@ -159,12 +118,13 @@ function router() {
                 const newEmail = document.getElementById('newEmail').value;
                 const newUsername = document.getElementById('newUsername').value;
                 const newPassword = document.getElementById('newPassword').value;
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
                 const response = await fetch('/api/users/rq_signup/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken') // Include the CSRF token
+                        'X-CSRFToken': csrfToken // Include the CSRF token
                     },
                     body: JSON.stringify({ newName, newEmail, newUsername, newPassword })
                 });
@@ -183,38 +143,69 @@ function router() {
         });
     }else if (path === '/profile'){
         const token = localStorage.getItem('access_token');
-        fetch('/api/users/profile', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}` // Include the token here
-            }
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to load profile');
+        if (!token)
+            window.location.href = '/login';
+        else
+        {
+            fetch('/api/users/profile', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}` // Include the token here
                 }
-                return response.json();
             })
-            .then(data => {
-                app.innerHTML = `
-                <h1>User Profile</h1>
-                <img src="${data.profile_picture_url}" alt="Profile Picture" style="width: 200px; height: 150px;">
-                <p>Username: ${data.username}</p>
-                <p>Email: ${data.email}</p>
-                <p>Level: ${data.level}</p>
-                <button id="LogOut" class="btn btn-secondary">LogOut</button>
-                `;
-                
-                console.log(data.profile_picture_url);
-                const LogOut = document.getElementById('LogOut');
-                LogOut.addEventListener('click', function() {
-                    logout();
-                }); 
-            })
-            .catch(error => {
-                console.error('Error loading profile:', error);
-            });
-    } else {
+                .then(response => {
+                    if (response.status === 401) {
+                        localStorage.removeItem('access_token');
+                        window.location.href = '/login';
+                    }
+                    if (!response.ok) {
+                        throw new Error('Failed to load profile');
+                    }
+                    return response.text();  // Return HTML content
+                })
+                .then(htmlContent => {
+                    app.innerHTML = htmlContent;
+                    
+                    const LogOut = document.getElementById('LogOut');
+                    LogOut.addEventListener('click', function() {
+                        logout();
+                    }); 
+                })
+                .catch(error => {
+                    console.error('Error loading profile:', error);
+                });
+        }
+    } else if (path === '/search'){
+        const token = localStorage.getItem('access_token'); // Get the token from localStorage
+        if (!token)
+            window.location.href = '/login';
+        else
+        {
+                const query = new URLSearchParams(window.location.search).get('q'); // Get the search query from the URL
+
+                // Fetch search results with the token included in the headers
+                fetch(`/api/users/search/?q=${query}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,  // Include the token in the request
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load search results');
+                    }
+                    return response.text();
+                })
+                .then(htmlContent => {
+                    app.innerHTML = htmlContent;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+    }else {
         // 404 - Page Not Found
         app.innerHTML = '<h1>404 - Page Not Found</h1>';
     }
@@ -240,36 +231,8 @@ window.addEventListener('load', function () {
 // Handle browser back/forward buttons
 window.addEventListener('popstate', router);
 
-document.addEventListener('DOMContentLoaded', function() {
-    const accessToken = localStorage.getItem('access_token');
-    if (accessToken) {
-        // Token exists, assume user is logged in
-        updateNav();  // Call updateNav() to update the navigation bar
-    }
-});
-
 function logout() {
     localStorage.removeItem('access_token');  // Remove the token
-    updateNav();  // Reset navigation to the logged-out state
     window.location.href = '/login';  // Redirect to login page
 }
 
-function fetchProtectedData(url) {
-    const token = localStorage.getItem('access_token');
-
-    return fetch(url, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`  // Attach token in Authorization header
-        }
-    });
-}
-
-fetchProtectedData('/api/users/profile')
-    .then(response => response.json())
-    .then(data => {
-        console.log('Profile Data:', data);
-    })
-    .catch(err => {
-        console.error('Error fetching profile:', err);
-    });

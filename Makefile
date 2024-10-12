@@ -14,4 +14,6 @@ clean:
 	docker network rm $$(docker network ls -q)
 # docker rmi -f $$(docker images -qa);\
 
+# docker rmi -f $$(docker images -qa);\
+
 .PHONY: all re down clean
