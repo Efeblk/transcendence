@@ -223,6 +223,60 @@ function router() {
                     console.error('Error loading search page:', error);
                 });    
             }
+        }else if (path.match(/^\/profile\/([^\/]+)\/$/)) {
+            const token = localStorage.getItem('access_token');
+            const username = path.split('/')[2];
+
+            if (!token) {
+                window.location.href = '/login';  // Redirect to login if no token
+            } else {
+                fetch(`/api/users/profile/${username}`, {  // Use the username in the API call
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`  // Include the token
+                    }
+                })
+                .then(response => {
+                    if (response.status === 401) {
+                        localStorage.removeItem('access_token');  // Remove token if unauthorized
+                        window.location.href = '/login';  // Redirect to login
+                    }
+                    if (!response.ok) {
+                        throw new Error('Failed to load profile');
+                    }
+                    return response.text();  // Return HTML content
+                })
+                .then(htmlContent => {
+                    app.innerHTML = htmlContent;  // Insert the HTML content into the app
+                    
+                    const AddFriend = document.getElementById('AddFriend');
+                    AddFriend.addEventListener('click', function() {
+                        fetch('/api/users/add_friend/', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ username: username }) // Send the username in the request body
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Failed to add friend');
+                            }
+                            return response.json(); // Parse the JSON response
+                        })
+                        .then(data => {
+                            alert('Friend request sent!'); // Notify the user
+                        })
+                        .catch(error => {
+                            console.error('Error adding friend:', error);
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading profile:', error);
+                });
+            }
     }else {
         // 404 - Page Not Found
         app.innerHTML = '<h1>404 - Page Not Found</h1>';
@@ -236,6 +290,15 @@ function navigate(event) {
     window.history.pushState(null, null, href);
     router();  // Call router function to load the content
 }
+
+// Example of adding event listeners for user profile links
+document.querySelectorAll('.user-profile-link').forEach(link => {
+    link.addEventListener('click', function(event) {
+        event.preventDefault();  // Prevent default link behavior
+        const username = this.getAttribute('data-username');  // Get username from data attribute
+        window.location.href = `/profile/${username}/`;
+    });
+});
 
 // Set up event listeners on page load
 window.addEventListener('load', function () {

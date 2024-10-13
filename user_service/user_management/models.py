@@ -17,8 +17,15 @@ class Users(AbstractUser):
         return f"User - ${self.id} ${self.user_name}"
 
 class Friendship(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('declined', 'Declined'),
+    )
+
     user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='friendships')
     friend = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='friends')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
 
     class Meta:
         unique_together = ('user', 'friend')

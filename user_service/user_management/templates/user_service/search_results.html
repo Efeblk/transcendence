@@ -6,7 +6,7 @@
             <!-- Loop through each user in the results and display their username -->
             {% for user in results %}
                 <li>
-                    <a href="{% url 'user_profile' user.username %}">
+                    <a href="/profile/{{user.username}}/" class="user-profile-link" data-username="{{ user.username }}">
                         {{ user.username }}
                     </a>
                 </li>

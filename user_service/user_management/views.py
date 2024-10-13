@@ -1,5 +1,5 @@
 import json
-from .models import Users
+from .models import Users, Friendship
 from rest_framework import generics
 from django.shortcuts import render, get_object_or_404
 from .serializers import UsersSerializer
@@ -88,18 +88,27 @@ def login(request):
 @permission_classes([IsAuthenticated])
 @renderer_classes([TemplateHTMLRenderer])
 def profile_view(request):
+    friends_count = Friendship.objects.filter(user=request.user, status='accepted').count()
+    pending_requests_count = Friendship.objects.filter(friend=request.user, status='pending').count()
+
     context = {
-        'user': request.user  # Pass the logged-in user to the template
+        'user': request.user,
+        'friends': friends_count,
+        'requests': pending_requests_count,
     }
     return Response(context, template_name='user_service/profile.html')
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@renderer_classes([TemplateHTMLRenderer])
 def user_profile(request, username):
     # Retrieve the user by their username
     user = get_object_or_404(Users, username=username)
-    
-    return render(request, 'user_profile.html', {'profile_user': user})
+    context = {
+        'profile_user': user,
+        'user': request.user
+    }
+    return Response(context, template_name='user_service/user_profile.html')
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -111,3 +120,36 @@ def search_people(request):
     results = Users.objects.filter(username__icontains=query)
     
     return Response({'results': results, 'query': query}, template_name='user_service/search_results.html')
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_friend(request):
+    data = request.data
+    username = data.get('username')
+    friend = Users.objects.get(username=username)
+    user = request.user  # The logged-in user
+
+    friendship, created = Friendship.objects.get_or_create(user=user, friend=friend)
+
+    if created:
+        return Response({'message': 'Friend request sent'}, status=201)
+    else:
+        return Response({'message': 'Friend request already sent'}, status=400)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def accept_friend(request, username):
+    user = request.user
+    friend = get_object_or_404(Users, username=username)
+
+    # Find the friendship and update the status
+    try:
+        friendship = Friendship.objects.get(user=friend, friend=user)
+        friendship.status = 'accepted'
+        friendship.save()
+        return Response({'message': 'Friend request accepted'}, status=200)
+    except Friendship.DoesNotExist:
+        return Response({'message': 'Friend request not found'}, status=404)
+
