@@ -175,36 +175,54 @@ function router() {
                     console.error('Error loading profile:', error);
                 });
         }
-    } else if (path === '/search'){
-        const token = localStorage.getItem('access_token'); // Get the token from localStorage
+    } else if (path === '/search') {
+        const token = localStorage.getItem('access_token');
         if (!token)
             window.location.href = '/login';
         else
         {
-                const query = new URLSearchParams(window.location.search).get('q'); // Get the search query from the URL
-
-                // Fetch search results with the token included in the headers
-                fetch(`/api/users/search/?q=${query}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,  // Include the token in the request
-                        'Content-Type': 'application/json',
-                    }
-                })
+            fetch('/api/users/search')
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Failed to load search results');
+                        throw new Error('Failed to load search page');
                     }
                     return response.text();
                 })
                 .then(htmlContent => {
                     app.innerHTML = htmlContent;
+        
+                    // Add event listener for form submission
+                    const searchForm = document.getElementById('searchForm');
+                    searchForm.addEventListener('submit', async function(event) {
+                        event.preventDefault();  // Prevent default form submission
+        
+                        let query = document.getElementById('searchInput').value.trim();  // Get search query and trim spaces
+                
+                        fetch(`/api/users/rq_search/?q=${encodeURIComponent(query)}`, {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,  // Include token
+                                'Content-Type': 'application/json',
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Failed to load search results');
+                            }
+                            return response.text();
+                        })
+                        .then(htmlContent => {
+                            app.innerHTML = htmlContent; // Display results
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                    });
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                });
-        }
-
+                    console.error('Error loading search page:', error);
+                });    
+            }
     }else {
         // 404 - Page Not Found
         app.innerHTML = '<h1>404 - Page Not Found</h1>';

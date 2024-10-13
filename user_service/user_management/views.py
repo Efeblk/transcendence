@@ -25,6 +25,8 @@ def signup_view(request):
 def login_view(request):
     return render(request, 'user_service/login.html')
     
+def search_view(request):
+    return render(request, 'user_service/search.html')
 
 def signup(request):
     if request.method == 'POST':
@@ -103,11 +105,9 @@ def user_profile(request, username):
 @permission_classes([IsAuthenticated])
 @renderer_classes([TemplateHTMLRenderer])
 def search_people(request):
-    query = request.GET.get('q')  # 'q' will be the search input name
-    results = []
+    query = request.GET.get('q', '').strip()  # Get 'q' query parameter and strip spaces
 
-    if query:
-        # Find all users whose username contains the search query (case-insensitive)
-        results = Users.objects.filter(username__icontains=query)
+    # Search for users whose username contains the query (case-insensitive)
+    results = Users.objects.filter(username__icontains=query)
     
     return Response({'results': results, 'query': query}, template_name='user_service/search_results.html')
