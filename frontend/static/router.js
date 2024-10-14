@@ -165,7 +165,7 @@ function router() {
                 })
                 .then(htmlContent => {
                     app.innerHTML = htmlContent;
-                    
+
                     const LogOut = document.getElementById('LogOut');
                     LogOut.addEventListener('click', function() {
                         logout();
@@ -250,31 +250,118 @@ function router() {
                     app.innerHTML = htmlContent;  // Insert the HTML content into the app
                     
                     const AddFriend = document.getElementById('AddFriend');
-                    AddFriend.addEventListener('click', function() {
-                        fetch('/api/users/add_friend/', {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ username: username }) // Send the username in the request body
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Failed to add friend');
-                            }
-                            return response.json(); // Parse the JSON response
-                        })
-                        .then(data => {
-                            alert('Friend request sent!'); // Notify the user
-                        })
-                        .catch(error => {
-                            console.error('Error adding friend:', error);
+                    if (AddFriend) {
+                        AddFriend.addEventListener('click', function() {
+                            fetch('/api/users/add_friend/', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ username: username }) // Send the username in the request body
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    if (response.status === 400) {
+                                        return response.json().then(data => {
+                                            alert(data.message); // Alert the specific message from the backend
+                                        });
+                                    } else {
+                                        alert('Failed to add friend. Status: ' + response.status);
+                                    }
+                                } else {
+                                    return response.json(); // Parse the JSON response if successful
+                                }
+                            })
+                            .then(data => {
+                                if (data) {
+                                    alert(data.message); // Notify the user with the message
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error adding friend:', error);
+                                alert('An unexpected error occurred.');
+                            });
+                        });
+                    }
+
+                    const acceptButtons = document.querySelectorAll('.accept-btn');
+                    const declineButtons = document.querySelectorAll('.decline-btn');
+                    
+                    acceptButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const friendId = this.getAttribute('data-id');
+                            handleFriendRequest(friendId, 'accept');
+                        });
+                    });
+                    
+                    declineButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const friendId = this.getAttribute('data-id');
+                            handleFriendRequest(friendId, 'decline');
+                        });
+                    });
+
+                })
+                .catch(error => {
+                    console.error('Error loading profile:', error);
+                });
+            }
+    }else if (path === '/friend_requests') {
+        const token = localStorage.getItem('access_token');
+        if (!token)
+            window.location.href = '/login';
+        else {
+            fetch('/api/users/friend_requests/', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}` // Send token in the header
+                }
+            })
+                .then(response => response.text())  // Return HTML content
+                .then(htmlContent => {
+                    app.innerHTML = htmlContent; // Inject the HTML content for friend requests
+                    
+                    // Add event listeners for accept and decline buttons
+                    const acceptButtons = document.querySelectorAll('.accept-btn');
+                    const declineButtons = document.querySelectorAll('.decline-btn');
+                    
+                    acceptButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const friendId = this.getAttribute('data-id');
+                            handleFriendRequest(friendId, 'accept');
+                        });
+                    });
+                    
+                    declineButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const friendId = this.getAttribute('data-id');
+                            handleFriendRequest(friendId, 'decline');
                         });
                     });
                 })
                 .catch(error => {
-                    console.error('Error loading profile:', error);
+                    console.error('Error loading friend requests:', error);
+                });
+            }
+    }else if (path === '/friends') {
+        const token = localStorage.getItem('access_token');
+        if (!token)
+            window.location.href = '/login';
+        else {
+            fetch('/api/users/friends/', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}` // Send token in the header
+                }
+            })
+                .then(response => response.text())  // Return HTML content
+                .then(htmlContent => {
+                    app.innerHTML = htmlContent; // Inject the HTML content for friend requests
+                    
+                })
+                .catch(error => {
+                    console.error('Error loading friend requests:', error);
                 });
             }
     }else {
@@ -317,3 +404,29 @@ function logout() {
     window.location.href = '/login';  // Redirect to login page
 }
 
+function handleFriendRequest(friendId, action) {
+    const token = localStorage.getItem('access_token');
+    const url = action === 'accept' ? `/api/users/friendships/accept/${friendId}/` : `/api/users/friendships/decline/${friendId}/`;
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            const Request = document.getElementById(`request-${friendId}`);
+            if (Request)
+                Request.remove(); // Remove the friend request from the list
+            alert(`Friend request ${action}ed successfully!`);
+            window.location.href = window.location.href;
+        } else {
+            alert('Failed to process the request.');
+        }
+    })
+    .catch(error => {
+        console.error('Error handling friend request:', error);
+    });
+}

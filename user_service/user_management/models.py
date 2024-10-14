@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q, F
 from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
@@ -28,16 +29,12 @@ class Friendship(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
 
     class Meta:
-        unique_together = ('user', 'friend')
-
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'friend'],
+                name='unique_friendship',
+                condition=Q(user__lt=F('friend'))
+            ),
+        ]
     def __str__(self):
         return f'{self.user} is friends with {self.friend}'
-
-
-#user_a = User.objects.create(username='UserA')
-#user_b = User.objects.create(username='UserB')
-
-# Create a friendship
-#Friendship.objects.create(user=user_a, friend=user_b)
-#Friendship.objects.create(user=user_b, friend=user_a)  # Bidirectional
-

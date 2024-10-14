@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UsersViewSet, signup, login, login_view, signup_view, search_people, user_profile, profile_view, search_view, add_friend
+from .views import UsersViewSet, signup, login, login_view, signup_view, search_people, user_profile, profile_view, search_view, add_friend, list_friend_requests, accept_friend_request, decline_friend_request, friends
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -21,6 +21,11 @@ urlpatterns = [
     path('rq_search/', search_people, name='rq_search'),
     path('profile/<str:username>/', user_profile, name='user_profile'),
     path('add_friend/', add_friend, name='add_friend'),
+    path('friend_requests/', list_friend_requests, name='list_friend_requests'),
+    path('friends/', friends, name='friends'),
+    path('friendships/accept/<int:friend_id>/', accept_friend_request, name='accept_friend_request'),
+    path('friendships/decline/<int:friend_id>/', decline_friend_request, name='decline_friend_request'),    
+
 ]
 
 if settings.DEBUG:

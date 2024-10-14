@@ -3,7 +3,14 @@
 <p>Username: {{profile_user.username}}</p>
 <p>Email: {{profile_user.user_email}}</p>
 <p>Level: {{profile_user.user_level}}</p>
-{% if profile_user.username != user.username %}
-    <button id="AddFriend" class="btn btn-secondary">Add Friend</button>
-{% endif %}
 
+{% if action == 'add_friend'%}
+    {% if profile_user.username != user.username %}
+        <button id="AddFriend" class="btn btn-secondary">Add Friend</button>
+    {% endif %}
+{% elif action == 'pending' %}
+    <button class="accept-btn" data-id="{{ profile_user.id }}">Accept</button>
+    <button class="decline-btn" data-id="{{ profile_user.id }}">Decline</button>
+{% elif action == 'accepted' %}
+    <button class="decline-btn" data-id="{{ profile_user.id }}">Decline</button>
+{% endif %}

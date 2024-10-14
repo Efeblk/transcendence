@@ -13,6 +13,7 @@ from rest_framework.decorators import api_view, permission_classes, renderer_cla
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
+from django.db.models import Q
 
 
 class UsersViewSet(generics.ListCreateAPIView):
@@ -88,7 +89,12 @@ def login(request):
 @permission_classes([IsAuthenticated])
 @renderer_classes([TemplateHTMLRenderer])
 def profile_view(request):
-    friends_count = Friendship.objects.filter(user=request.user, status='accepted').count()
+
+    friends_count = Friendship.objects.filter(
+        (Q(user=request.user) | Q(friend=request.user)),
+        status='accepted'
+    ).distinct().count()
+
     pending_requests_count = Friendship.objects.filter(friend=request.user, status='pending').count()
 
     context = {
@@ -103,11 +109,32 @@ def profile_view(request):
 @renderer_classes([TemplateHTMLRenderer])
 def user_profile(request, username):
     # Retrieve the user by their username
-    user = get_object_or_404(Users, username=username)
+    profile_user = get_object_or_404(Users, username=username)
+    user = request.user  # The logged-in user
+
+    # Check the status of the friendship
+    friendship = Friendship.objects.filter(
+        (Q(user=user) & Q(friend=profile_user)) | (Q(user=profile_user) & Q(friend=user))
+    ).first()
+
+    # Determine the action based on the friendship status
+    if friendship is None:
+        action = 'add_friend'  # No friendship exists
+    elif friendship.status == 'declined':
+        action = 'add_friend'  # Friendship was declined
+    elif friendship.status == 'pending' and friendship.user == profile_user:
+        action = 'pending'  # There is a pending request from profile_user
+    elif friendship.status == 'accepted':
+        action = 'accepted'  # There is a pending request from profile_user
+    else:
+        action = 'none'  # Friendship is accepted
+
     context = {
-        'profile_user': user,
-        'user': request.user
+        'profile_user': profile_user,
+        'user': user,
+        'action': action
     }
+    
     return Response(context, template_name='user_service/user_profile.html')
 
 @api_view(['GET'])
@@ -132,24 +159,64 @@ def add_friend(request):
 
     friendship, created = Friendship.objects.get_or_create(user=user, friend=friend)
 
+    if friendship:
+        if friendship.status == 'declined':
+            friendship.status = 'pending'
+            friendship.save()
+            created = True
+
     if created:
         return Response({'message': 'Friend request sent'}, status=201)
     else:
         return Response({'message': 'Friend request already sent'}, status=400)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@renderer_classes([TemplateHTMLRenderer])
+def list_friend_requests(request):
+    pending_requests = Friendship.objects.filter(friend=request.user, status='pending')
+    context = {
+        'requests': pending_requests  # Passing the queryset directly
+    }
+    return Response(context, template_name='user_service/friend_requests.html')
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@renderer_classes([TemplateHTMLRenderer])
+def friends(request):
+    friends = Friendship.objects.filter(
+        (Q(user=request.user) | Q(friend=request.user)),
+        status='accepted'
+    ).distinct()
+    
+    context = {
+        'friends': friends,
+        'user': request.user  # Passing the queryset directly
+    }
+    return Response(context, template_name='user_service/friends.html')
+
+
+# Accept a friend request
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def accept_friend(request, username):
-    user = request.user
-    friend = get_object_or_404(Users, username=username)
-
-    # Find the friendship and update the status
+def accept_friend_request(request, friend_id):
     try:
-        friendship = Friendship.objects.get(user=friend, friend=user)
+        friendship = Friendship.objects.get(user=friend_id, friend=request.user, status='pending')
         friendship.status = 'accepted'
         friendship.save()
-        return Response({'message': 'Friend request accepted'}, status=200)
+        return Response({'message': 'Friend request accepted'}, status=201)
     except Friendship.DoesNotExist:
-        return Response({'message': 'Friend request not found'}, status=404)
+        return Response({'error': 'Friend request not found'}, status=404)
+
+# Decline a friend request
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def decline_friend_request(request, friend_id):
+    try:
+        friendship = Friendship.objects.get(user=friend_id, friend=request.user, status='pending')
+        friendship.status = 'declined'
+        friendship.save()
+        return Response({'message': 'Friend request declined'}, status=201)
+    except Friendship.DoesNotExist:
+        return Response({'error': 'Friend request not found'}, status=404)
 
