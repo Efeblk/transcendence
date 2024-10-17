@@ -1,11 +1,23 @@
 class Player {
     constructor(scene) {
+        console.log('Player initialized');
         // Player model as a simple cube
         const geometry = new THREE.BoxGeometry(1, 2, 1);
-        const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
+        const material = new THREE.MeshStandardMaterial({ color: 0x0000ff }); // Ensure the color is defined
         this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.position.set(0, 1, 0); // Center the player
-        scene.add(this.mesh);
+        
+        if (this.mesh) {
+            console.log('Player mesh created:');
+        }else{
+            console.error('Player mesh failed to initialize.');
+        }
+        if (scene) {
+            scene.add(this.mesh);
+            console.log('Player mesh added to the scene:', this.mesh.position);
+        } else {
+            console.error('Scene not provided when initializing Player.');
+        }
 
         // Player movement controls
         this.speed = 0.1;
@@ -65,9 +77,15 @@ class Player {
     }
 
     update() {
-        if (this.controls.forward) this.mesh.position.z -= this.speed;
-        if (this.controls.backward) this.mesh.position.z += this.speed;
-        if (this.controls.left) this.mesh.position.x -= this.speed;
-        if (this.controls.right) this.mesh.position.x += this.speed;
+        if (this.mesh) {
+            if (this.controls.forward) this.mesh.position.z -= this.speed;
+            if (this.controls.backward) this.mesh.position.z += this.speed;
+            if (this.controls.left) this.mesh.position.x -= this.speed;
+            if (this.controls.right) this.mesh.position.x += this.speed;
+
+            console.log('Player position updated:', this.mesh.position);
+        } else {
+            console.error('Player mesh is not defined in update.');
+        }
     }
 }

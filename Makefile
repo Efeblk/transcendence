@@ -12,6 +12,7 @@ clean:
 	docker rm $$(docker ps -qa);\
 	docker volume rm $$(docker volume ls -q);\
 	docker network rm $$(docker network ls -q)
+	rm -rf game_service/staticfiles
 
 # docker rmi -f $$(docker images -qa);\
 
