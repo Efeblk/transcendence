@@ -4,7 +4,7 @@ function pageStartScript(path, containerId) {
     
     // Create a new script element
     const script = document.createElement('script');
-    script.src = '/api' + path + '/start';  // Fetching the controller script from the microservice
+    script.src = '/api/game' + path + '/start';  // Fetching the controller script from the microservice
     script.onload = () => {
         console.log('Page-specific start script loaded and executed.');
     };
@@ -29,9 +29,9 @@ function router() {
     if (path === '/') {
         // Home page content
         app.innerHTML = '<h1>Welcome to Transcendence</h1><p>This is the initial home page content.</p>';
-    } else if (path === '/game') {
+    } else if (path === '/pingpong') {
         // Fetch and load game page
-        fetch('/api/game/game')
+        fetch('/api/game/pingpong/pingpong')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to load game page');
@@ -47,7 +47,26 @@ function router() {
             .catch(error => {
                 console.error('Error loading page:', error);
             });
-    } else if (path === '/login') {
+    }else if (path === '/zombie_game') { 
+        fetch('/api/game/zombie_game/zombie_game')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load zombie game page');
+                }
+                return response.text();
+            })
+            .then(htmlContent => {
+                console.log('HTML CONTENT:', htmlContent);
+                app.innerHTML = htmlContent;
+
+                // Dynamically load the zombie game controller script after loading the HTML
+                pageStartScript(path, 'gameContainer');  // Target the zombie game container specifically
+            })
+            .catch(error => {
+                console.error('Error loading page:', error);
+            });
+    }
+    else if (path === '/login') {
         const token = localStorage.getItem('access_token');
         if (token)
             window.location.href = '/profile';

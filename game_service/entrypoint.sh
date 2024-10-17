@@ -3,6 +3,10 @@
 # Exit on any error
 set -e
 
+# Make migrations (this is optional and generally only needed in development)
+echo "Making migrations..."
+python manage.py makemigrations pingpong
+
 # Run migrations
 echo "Running migrations..."
 python manage.py migrate --noinput

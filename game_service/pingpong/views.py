@@ -17,6 +17,7 @@ class GameDataDetailView(generics.RetrieveUpdateDestroyAPIView):
 def game_view(request):
     return render(request, 'game/game.html')
 
+
 def game_starter_script(request):
     # This is a dynamically served script, but in production you can serve a static version
     script = """
@@ -24,7 +25,7 @@ def game_starter_script(request):
         console.log("Fetching and starting the game...");
 
         // Path to the texture
-        const texturePath = '/static/game/textures/table.jpg';  
+        const texturePath = '/static/pingpong/textures/table.jpg';  
         
         // Automatically initialize the game using the Game class
         const game = new Game(texturePath);

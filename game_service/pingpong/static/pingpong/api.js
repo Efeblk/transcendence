@@ -1,6 +1,6 @@
 class GameAPI {
     constructor(baseUrl) {
-        this.baseUrl = baseUrl || '/api/game/';
+        this.baseUrl = baseUrl || '/api/game/pingpong/';
     }
 
     // Method to save game data via POST request
