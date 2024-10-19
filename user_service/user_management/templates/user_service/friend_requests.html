@@ -1,0 +1,12 @@
+<h1>Friendship Requests</h1>
+<ul id="friendRequests">
+    {% for request in requests %}
+        <li id="request-{{ request.user.id }}">
+            <a href="/profile/{{request.user.username}}/" class="user-profile-link" data-username="{{ request.user.username }}">
+                {{ request.user.username }} 
+            </a>
+            <button class="accept-btn" data-id="{{ request.user.id }}">Accept</button>
+            <button class="decline-btn" data-id="{{ request.user.id }}">Decline</button>
+        </li>
+    {% endfor %}
+</ul>

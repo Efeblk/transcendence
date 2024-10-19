@@ -1,0 +1,99 @@
+/* General button styles */
+button {
+    font-family: 'Arial', sans-serif;
+    font-size: 24px;
+    padding: 15px 30px;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
+button:active {
+    box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(2px);
+}
+
+/* Start and Restart button specific styles */
+.start-button {
+    font-size: 28px;
+    background-color: #28a745;
+    padding: 20px 40px;
+}
+
+.start-button:hover {
+    background-color: #218838;
+}
+
+.restart-button {
+    font-size: 28px;
+    background-color: #dc3545;
+    padding: 20px 40px;
+}
+
+.restart-button:hover {
+    background-color: #c82333;
+}
+
+/* Difficulty button specific styles */
+.easy-button {
+    font-size: 28px;
+    background-color: #218838;
+    padding: 20px 20px;
+}
+
+.easy-button:hover {
+    background-color: #1e7e34;
+}
+
+.medium-button {
+    font-size: 28px;
+    background-color: #ffc107;
+    padding: 20px 40px;
+}
+
+.medium-button:hover {
+    background-color: #e0a800;
+}
+
+.hard-button {
+    font-size: 28px;
+    background-color: #dc3545;
+    padding: 20px 60px;
+}
+
+.hard-button:hover {
+    background-color: #c82333;
+}
+
+/* Centering the start and restart buttons in the game container */
+#gameContainer .start-button,
+#gameContainer .restart-button {
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Positioning for the difficulty buttons container */
+#difficultyContainer {
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    gap: 15px; /* Space between difficulty buttons */
+}
+
+/* Remove gap from individual buttons */
+#difficultyContainer .easy-button,
+#difficultyContainer .medium-button,
+#difficultyContainer .hard-button {
+    margin: 0;
+}

@@ -1,0 +1,19 @@
+{% if query %}
+    <h2>Search results for "{{ query }}":</h2>
+
+    {% if results %}
+        <ul>
+            <!-- Loop through each user in the results and display their username -->
+            {% for user in results %}
+                <li>
+                    <a href="/profile/{{user.username}}/" class="user-profile-link" data-username="{{ user.username }}">
+                        {{ user.username }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <!-- No results found -->
+        <p>No people found matching "{{ query }}"</p>
+    {% endif %}
+{% endif %}

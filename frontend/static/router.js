@@ -4,7 +4,7 @@ function pageStartScript(path, containerId) {
     
     // Create a new script element
     const script = document.createElement('script');
-    script.src = '/api' + path + '/start';  // Fetching the controller script from the microservice
+    script.src = '/api/game' + path + '/start';  // Fetching the controller script from the microservice
     script.onload = () => {
         console.log('Page-specific start script loaded and executed.');
     };
@@ -21,52 +21,6 @@ function pageStartScript(path, containerId) {
     }
 }
 
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-function updateNav() {
-    const loginLink = document.querySelector('a[href="/login"]');
-    const profileLink = document.createElement('a');
-    
-    profileLink.href = "/profile";
-    profileLink.textContent = "Profile";
-    profileLink.classList.add('nav-link');
-
-    // Check if the user is logged in by checking the access token
-    const isLoggedIn = localStorage.getItem('access_token') !== null;
-
-    if (isLoggedIn) {
-        // Replace "Login" with "Profile"
-        if (loginLink) {
-            loginLink.replaceWith(profileLink);
-        }
-    } else {
-        // If logged out, bring back the "Login" link if it's missing
-        if (!loginLink) {
-            const newLoginLink = document.createElement('a');
-            newLoginLink.href = "/login";
-            newLoginLink.textContent = "Login";
-            newLoginLink.classList.add('nav-link');
-            profileLink.replaceWith(newLoginLink);
-        }
-    }
-}
-
-
-
 // Router function to handle navigation
 function router() {
     const path = window.location.pathname;
@@ -75,9 +29,9 @@ function router() {
     if (path === '/') {
         // Home page content
         app.innerHTML = '<h1>Welcome to Transcendence</h1><p>This is the initial home page content.</p>';
-    } else if (path === '/game') {
+    } else if (path === '/pingpong') {
         // Fetch and load game page
-        fetch('/api/game/game')
+        fetch('/api/game/pingpong/pingpong')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to load game page');
@@ -93,164 +47,343 @@ function router() {
             .catch(error => {
                 console.error('Error loading page:', error);
             });
-    } else if (path === '/login') {
-        app.innerHTML = `
-        <h1>Login</h1>
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Login</button>
-        </form>
-        <div id="error-message" class="text-danger"></div>
-        
-        <p>Don't have an account? <button id="signupBtn" class="btn btn-secondary">Sign Up</button></p>
-        `;
-    
-        const loginForm = document.getElementById('loginForm');
-        loginForm.addEventListener('submit', async function(event) {
-            event.preventDefault(); // Prevent form submission
-    
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-    
-            // Make API call to check user credentials
-            const response = await fetch('/api/users/login/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                localStorage.setItem('access_token', data.access_token);
-                updateNav();
-                alert('Login successful!');
-                window.location.href = '/profile';
-            } else {
-                const errorMessage = document.getElementById('error-message');
-                errorMessage.textContent = data.message;
-            }
-        });
-    
-        const signupBtn = document.getElementById('signupBtn');
-        signupBtn.addEventListener('click', function() {
-            window.location.href = '/signup'; // Redirect to sign-up page
-        });    
-    } else if (path === '/signup') {
-        // Sign Up page content
-        app.innerHTML = `
-            <h1>Sign Up</h1>
-            <form id="signupForm">
-                <div class="form-group">
-                    <label for="newName">Name</label>
-                    <input type="text" id="newName" name="newName" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="newEmail">Email</label>
-                    <input type="text" id="newEmail" name="newEmail" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="newUsername">Username</label>
-                    <input type="text" id="newUsername" name="newUsername" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="newPassword">Password</label>
-                    <input type="password" id="newPassword" name="newPassword" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Sign Up</button>
-            </form>
-        `;
-    
-        // Handle sign-up form submission
-        const signupForm = document.getElementById('signupForm');
-        signupForm.addEventListener('submit', async function(event) {
-            event.preventDefault(); // Prevent form submission
-    
-            // Mock sign-up logic (you can replace this with actual logic)
-            const newName = document.getElementById('newName').value;
-            const newEmail = document.getElementById('newEmail').value;
-            const newUsername = document.getElementById('newUsername').value;
-            const newPassword = document.getElementById('newPassword').value;
-
-            const response = await fetch('/api/users/signup/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken') // Include the CSRF token
-                },
-                body: JSON.stringify({ newName, newEmail, newUsername, newPassword })
-            });
-        
-            const data = await response.json();
-        
-            if (data.success) {
-                alert('Account created for ' + newUsername);
-                window.location.href = '/login'; // Redirect to login after signing up
-            } else {
-                alert(data.message); // Display error message
-            }
-        });
-    }else if (path === '/profile'){
-        const token = localStorage.getItem('access_token');
-        fetch('/api/users/profile', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}` // Include the token here
-            }
-        })
+    }else if (path === '/zombie_game') { 
+        fetch('/api/game/zombie_game/zombie_game')
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Failed to load profile');
-                }
-                return response.json();
-            })
-            .then(data => {
-                app.innerHTML = `
-                <h1>User Profile</h1>
-                <img src="${data.profile_picture_url}" alt="Profile Picture" style="width: 200px; height: 150px;">
-                <p>Username: ${data.username}</p>
-                <p>Email: ${data.email}</p>
-                <p>Level: ${data.level}</p>
-                <button id="LogOut" class="btn btn-secondary">LogOut</button>
-                `;
-                
-                console.log(data.profile_picture_url);
-                const LogOut = document.getElementById('LogOut');
-                LogOut.addEventListener('click', function() {
-                    logout();
-                }); 
-            })
-            .catch(error => {
-                console.error('Error loading profile:', error);
-            });
-    }else if (path === '/another-page') {
-        // Example: Handle another page with a different microservice or logic
-        fetch('/api/another-service/endpoint')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to load another page');
+                    throw new Error('Failed to load zombie game page');
                 }
                 return response.text();
             })
             .then(htmlContent => {
+                console.log('HTML CONTENT:', htmlContent);
                 app.innerHTML = htmlContent;
 
-                // Dynamically load the page start script for another page
-                pageStartScript(path, 'anotherContainer');  // Use another specific container
+                // Dynamically load the zombie game controller script after loading the HTML
+                pageStartScript(path, 'gameContainer');  // Target the zombie game container specifically
             })
             .catch(error => {
-                console.error('Error loading another page:', error);
+                console.error('Error loading page:', error);
             });
-    } else {
+    }
+    else if (path === '/login') {
+        const token = localStorage.getItem('access_token');
+        if (token)
+            window.location.href = '/profile';
+        else
+        {
+            fetch('/api/users/login')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load login page');
+                    }
+                    return response.text();
+                })
+                .then(htmlContent => {
+                    app.innerHTML = htmlContent;
+    
+                    const loginForm = document.getElementById('loginForm');
+                    loginForm.addEventListener('submit', async function(event) {
+                        event.preventDefault(); // Prevent form submission
+                
+                        const username = document.getElementById('username').value;
+                        const password = document.getElementById('password').value;
+                
+                        // Make API call to check user credentials
+                        const response = await fetch('/api/users/rq_login/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ username, password })
+                        });
+    
+                        const data = await response.json();
+    
+                        if (data.success) {
+                            localStorage.setItem('access_token', data.access_token);
+                            alert('Login successful!');
+                            window.location.href = '/profile';
+                        } else {
+                            const errorMessage = document.getElementById('error-message');
+                            errorMessage.textContent = data.message;
+                        }
+                    });
+                
+                    const signupBtn = document.getElementById('signupBtn');
+                    signupBtn.addEventListener('click', function() {
+                        window.location.href = '/signup'; // Redirect to sign-up page
+                    }); 
+                }).catch(error => { 
+                    console.error('Error loading login page:', error); 
+                });    
+        }
+    } else if (path === '/signup') {
+        fetch('/api/users/signup')
+            .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load sign-up page');
+            }
+            return response.text();
+        }).then(htmlContent => {
+            app.innerHTML = htmlContent;
+            // Handle sign-up form submission
+            const signupForm = document.getElementById('signupForm');
+            signupForm.addEventListener('submit', async function(event) {
+                event.preventDefault(); // Prevent form submission
+        
+                // Mock sign-up logic (you can replace this with actual logic)
+                const newName = document.getElementById('newName').value;
+                const newEmail = document.getElementById('newEmail').value;
+                const newUsername = document.getElementById('newUsername').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                const response = await fetch('/api/users/rq_signup/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken // Include the CSRF token
+                    },
+                    body: JSON.stringify({ newName, newEmail, newUsername, newPassword })
+                });
+            
+                const data = await response.json();
+            
+                if (data.success) {
+                    alert('Account created for ' + newUsername);
+                    window.location.href = '/login'; // Redirect to login after signing up
+                } else {
+                    alert(data.message); // Display error message
+                }
+            });
+        }).catch(error => {
+            console.error('Error loading sign-up page:', error);
+        });
+    }else if (path === '/profile'){
+        const token = localStorage.getItem('access_token');
+        if (!token)
+            window.location.href = '/login';
+        else
+        {
+            fetch('/api/users/profile', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}` // Include the token here
+                }
+            })
+                .then(response => {
+                    if (response.status === 401) {
+                        localStorage.removeItem('access_token');
+                        window.location.href = '/login';
+                    }
+                    if (!response.ok) {
+                        throw new Error('Failed to load profile');
+                    }
+                    return response.text();  // Return HTML content
+                })
+                .then(htmlContent => {
+                    app.innerHTML = htmlContent;
+
+                    const LogOut = document.getElementById('LogOut');
+                    LogOut.addEventListener('click', function() {
+                        logout();
+                    }); 
+                })
+                .catch(error => {
+                    console.error('Error loading profile:', error);
+                });
+        }
+    } else if (path === '/search') {
+        const token = localStorage.getItem('access_token');
+        if (!token)
+            window.location.href = '/login';
+        else
+        {
+            fetch('/api/users/search')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load search page');
+                    }
+                    return response.text();
+                })
+                .then(htmlContent => {
+                    app.innerHTML = htmlContent;
+        
+                    // Add event listener for form submission
+                    const searchForm = document.getElementById('searchForm');
+                    searchForm.addEventListener('submit', async function(event) {
+                        event.preventDefault();  // Prevent default form submission
+        
+                        let query = document.getElementById('searchInput').value.trim();  // Get search query and trim spaces
+                
+                        fetch(`/api/users/rq_search/?q=${encodeURIComponent(query)}`, {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,  // Include token
+                                'Content-Type': 'application/json',
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Failed to load search results');
+                            }
+                            return response.text();
+                        })
+                        .then(htmlContent => {
+                            app.innerHTML = htmlContent; // Display results
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading search page:', error);
+                });    
+            }
+        }else if (path.match(/^\/profile\/([^\/]+)\/$/)) {
+            const token = localStorage.getItem('access_token');
+            const username = path.split('/')[2];
+
+            if (!token) {
+                window.location.href = '/login';  // Redirect to login if no token
+            } else {
+                fetch(`/api/users/profile/${username}`, {  // Use the username in the API call
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`  // Include the token
+                    }
+                })
+                .then(response => {
+                    if (response.status === 401) {
+                        localStorage.removeItem('access_token');  // Remove token if unauthorized
+                        window.location.href = '/login';  // Redirect to login
+                    }
+                    if (!response.ok) {
+                        throw new Error('Failed to load profile');
+                    }
+                    return response.text();  // Return HTML content
+                })
+                .then(htmlContent => {
+                    app.innerHTML = htmlContent;  // Insert the HTML content into the app
+                    
+                    const AddFriend = document.getElementById('AddFriend');
+                    if (AddFriend) {
+                        AddFriend.addEventListener('click', function() {
+                            fetch('/api/users/add_friend/', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ username: username }) // Send the username in the request body
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    if (response.status === 400) {
+                                        return response.json().then(data => {
+                                            alert(data.message); // Alert the specific message from the backend
+                                        });
+                                    } else {
+                                        alert('Failed to add friend. Status: ' + response.status);
+                                    }
+                                } else {
+                                    return response.json(); // Parse the JSON response if successful
+                                }
+                            })
+                            .then(data => {
+                                if (data) {
+                                    alert(data.message); // Notify the user with the message
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error adding friend:', error);
+                                alert('An unexpected error occurred.');
+                            });
+                        });
+                    }
+
+                    const acceptButtons = document.querySelectorAll('.accept-btn');
+                    const declineButtons = document.querySelectorAll('.decline-btn');
+                    
+                    acceptButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const friendId = this.getAttribute('data-id');
+                            handleFriendRequest(friendId, 'accept');
+                        });
+                    });
+                    
+                    declineButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const friendId = this.getAttribute('data-id');
+                            handleFriendRequest(friendId, 'decline');
+                        });
+                    });
+
+                })
+                .catch(error => {
+                    console.error('Error loading profile:', error);
+                });
+            }
+    }else if (path === '/friend_requests') {
+        const token = localStorage.getItem('access_token');
+        if (!token)
+            window.location.href = '/login';
+        else {
+            fetch('/api/users/friend_requests/', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}` // Send token in the header
+                }
+            })
+                .then(response => response.text())  // Return HTML content
+                .then(htmlContent => {
+                    app.innerHTML = htmlContent; // Inject the HTML content for friend requests
+                    
+                    // Add event listeners for accept and decline buttons
+                    const acceptButtons = document.querySelectorAll('.accept-btn');
+                    const declineButtons = document.querySelectorAll('.decline-btn');
+                    
+                    acceptButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const friendId = this.getAttribute('data-id');
+                            handleFriendRequest(friendId, 'accept');
+                        });
+                    });
+                    
+                    declineButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const friendId = this.getAttribute('data-id');
+                            handleFriendRequest(friendId, 'decline');
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading friend requests:', error);
+                });
+            }
+    }else if (path === '/friends') {
+        const token = localStorage.getItem('access_token');
+        if (!token)
+            window.location.href = '/login';
+        else {
+            fetch('/api/users/friends/', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}` // Send token in the header
+                }
+            })
+                .then(response => response.text())  // Return HTML content
+                .then(htmlContent => {
+                    app.innerHTML = htmlContent; // Inject the HTML content for friend requests
+                    
+                })
+                .catch(error => {
+                    console.error('Error loading friend requests:', error);
+                });
+            }
+    }else {
         // 404 - Page Not Found
         app.innerHTML = '<h1>404 - Page Not Found</h1>';
     }
@@ -264,6 +397,15 @@ function navigate(event) {
     router();  // Call router function to load the content
 }
 
+// Example of adding event listeners for user profile links
+document.querySelectorAll('.user-profile-link').forEach(link => {
+    link.addEventListener('click', function(event) {
+        event.preventDefault();  // Prevent default link behavior
+        const username = this.getAttribute('data-username');  // Get username from data attribute
+        window.location.href = `/profile/${username}/`;
+    });
+});
+
 // Set up event listeners on page load
 window.addEventListener('load', function () {
     router();  // Call router when the page initially loads
@@ -276,36 +418,34 @@ window.addEventListener('load', function () {
 // Handle browser back/forward buttons
 window.addEventListener('popstate', router);
 
-document.addEventListener('DOMContentLoaded', function() {
-    const accessToken = localStorage.getItem('access_token');
-    if (accessToken) {
-        // Token exists, assume user is logged in
-        updateNav();  // Call updateNav() to update the navigation bar
-    }
-});
-
 function logout() {
     localStorage.removeItem('access_token');  // Remove the token
-    updateNav();  // Reset navigation to the logged-out state
     window.location.href = '/login';  // Redirect to login page
 }
 
-function fetchProtectedData(url) {
+function handleFriendRequest(friendId, action) {
     const token = localStorage.getItem('access_token');
-
-    return fetch(url, {
-        method: 'GET',
+    const url = action === 'accept' ? `/api/users/friendships/accept/${friendId}/` : `/api/users/friendships/decline/${friendId}/`;
+    
+    fetch(url, {
+        method: 'POST',
         headers: {
-            'Authorization': `Bearer ${token}`  // Attach token in Authorization header
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
         }
+    })
+    .then(response => {
+        if (response.ok) {
+            const Request = document.getElementById(`request-${friendId}`);
+            if (Request)
+                Request.remove(); // Remove the friend request from the list
+            alert(`Friend request ${action}ed successfully!`);
+            window.location.href = window.location.href;
+        } else {
+            alert('Failed to process the request.');
+        }
+    })
+    .catch(error => {
+        console.error('Error handling friend request:', error);
     });
 }
-
-fetchProtectedData('/api/users/profile')
-    .then(response => response.json())
-    .then(data => {
-        console.log('Profile Data:', data);
-    })
-    .catch(err => {
-        console.error('Error fetching profile:', err);
-    });
