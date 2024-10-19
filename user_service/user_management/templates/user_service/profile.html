@@ -1,0 +1,16 @@
+<h1>User Profile</h1>
+<img src="{{user.profile_picture.url}}" alt="Profile Picture" style="width: 200px; height: 150px;">
+<p>Username: {{user.username}}</p>
+<p>Email: {{user.user_email}}</p>
+<p>Level: {{user.user_level}}</p>
+<p>
+    <a href="/friends" class="user-profile-link">
+        Friends: {{friends}}
+    </a>
+</p>
+<p>
+    <a href="/friend_requests" class="user-profile-link">
+        Friendship Requests: {{requests}}
+    </a>
+</p>
+<button id="LogOut" class="btn btn-secondary">LogOut</button>

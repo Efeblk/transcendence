@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q, F
 from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
@@ -15,3 +16,25 @@ class Users(AbstractUser):
 
     def __str__(self):
         return f"User - ${self.id} ${self.user_name}"
+
+class Friendship(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('declined', 'Declined'),
+    )
+
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='friendships')
+    friend = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='friends')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'friend'],
+                name='unique_friendship',
+                condition=Q(user__lt=F('friend'))
+            ),
+        ]
+    def __str__(self):
+        return f'{self.user} is friends with {self.friend}'

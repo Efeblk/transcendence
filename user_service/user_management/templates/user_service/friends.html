@@ -1,0 +1,16 @@
+<h1>Friends</h1>
+<ul id="friends">
+    {% for friend in friends %}
+        <li id="request-{{ friend.user.id }}">
+            {% if friend.user.username == user.username %}
+                <a href="/profile/{{friend.friend.username}}/" class="user-profile-link" data-username="{{ friend.friend.username }}">
+                    {{ friend.friend.username }} 
+                </a>
+            {% else %}
+                <a href="/profile/{{friend.user.username}}/" class="user-profile-link" data-username="{{ friend.user.username }}">
+                    {{ friend.user.username }} 
+                </a>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
