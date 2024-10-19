@@ -272,21 +272,44 @@ def fortytwo_callback(request):
         return JsonResponse({'error': 'Failed to get user info'}, status=400)
     
     user_data = user_response.json()
+    cursus_users = user_data.get('cursus_users', [])
+    if len(cursus_users) >= 2:
+        s = cursus_users[1]
+    else:
+        s = cursus_users[0]
+    campus = user_data.get('campus', [])
+    c = campus[0]
     
     # Create or get user
 # friendship, created = Friendship.objects.get_or_create(user=user, friend=friend)
 
     user, created = Users.objects.get_or_create(
-        username=user_data['login'],
+        id=user_data['id'],  # 42 API'den alınan benzersiz kullanıcı kimliği
         defaults={
-            'email': user_data['email'],
-            'first_name': user_data.get('first_name', ''),
-            'last_name': user_data.get('last_name', '')
+            'username': user_data['login'],
+            'user_name': user_data['displayname'],
+            'first_name' : user_data['first_name'],
+            'last_name' : user_data['last_name'],
+            'email': user_data.get('email', ''),
+            'user_email': user_data.get('email', ''),
+            'user_level': s.get('level'),
+            'user_grade': s.get('grade'),
+            'user_skillsjson' : s.get('skills'),
+            'user_location' : c.get('name'),
+            'user_wallet' : user_data.get('wallet'),
+            'user_imagejson' : user_data.get('image'),
+            'user_phone' : user_data.get('phone'),
+            'user_created_on': user_data.get('created_at', ''),
+            'user_updated_on': user_data.get('updated_at', ''),
+            'user_type': 'normal',  # Varsayılan olarak 'standard' tip
+            'user_status': 'active',  # Varsayılan olarak 'active' durum
         }
     )
     
     # Log the user in
-    login_(user_data)
-    
-    # Redirect to frontend with success
-    return redirect('/#/login-success')
+    login(request, user)
+
+    # request.session['access_token'] = access_token
+
+    # return redirect('/#/login-success')
+    return redirect(f"/#/login-success?access_token={access_token}")

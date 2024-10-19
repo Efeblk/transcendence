@@ -538,22 +538,36 @@ document.addEventListener('DOMContentLoaded', () => {
 //     }
 //   }
 
+function getQueryParameterFromHash(param) {
+    // Hash kısmını alalım
+    const hash = window.location.hash;
+
+    // Hash kısmından '?' ve sonrası varsa alalım
+    const queryStringIndex = hash.indexOf('?');
+    if (queryStringIndex === -1) {
+        return null;
+    }
+
+    // Query string'i alalım ve URLSearchParams kullanarak parametreleri işleyelim
+    const queryString = hash.substring(queryStringIndex + 1);
+    const urlParams = new URLSearchParams(queryString);
+
+    // İstenen parametreyi alalım
+    return urlParams.get(param);
+}
+
 function handleLoginSuccess() {
     if (window.location.hash.startsWith('#/login-success')) {
-      const urlParams = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = urlParams.get('access_token');
-      console.log("debug\n");
-      if (accessToken) {
-        // Token'ı localStorage'a kaydet
-        localStorage.setItem('access_token', accessToken);
-        alert('Access token set edildi!');
+        console.log("handle login function working....");
         
-        // Kullanıcıyı profile sayfasına yönlendir
-        window.location.href = '/profile';
-      }
-      else {
-        console.log("elsed\n");
-      }
+        const accessToken = getQueryParameterFromHash('access_token');
+        console.log(accessToken);
+        
+        if (accessToken) {
+            localStorage.setItem('access_token', accessToken);
+            console.log('Access Token has been saved to localStorage.');
+        } else {
+            console.log("elsed\n");
+        }
     }
-  }
-  
+}

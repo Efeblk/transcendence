@@ -14,6 +14,13 @@ class Users(AbstractUser):
     user_updated_on = models.DateTimeField(auto_now=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True, default='profile_pictures/default.jpg')
 
+    user_grade = models.CharField(max_length=25, default="Fifth wheel")
+    user_skillsjson = models.JSONField(null=True, blank=True)
+    user_location = models.CharField(max_length=25, default="Earth")
+    user_wallet = models.IntegerField(default = 0)
+    user_imagejson = models.JSONField(null=True, blank=True)
+    user_phone = models.CharField(null=True, max_length=100)
+
     def __str__(self):
         return f"User - ${self.id} ${self.user_name}"
 
