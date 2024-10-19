@@ -7,7 +7,7 @@ from django.contrib.auth.models import AbstractUser
 class Users(AbstractUser):
     user_name = models.CharField(max_length=50)
     user_email = models.EmailField()
-    user_level = models.DecimalField(max_digits=5, decimal_places=2)
+    user_level = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     user_type = models.CharField(max_length=50)
     user_status = models.CharField(max_length=50)
     user_created_on = models.DateTimeField(auto_now_add=True)

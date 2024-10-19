@@ -46,10 +46,12 @@ POST https://auth-server.com/token
   client_id=123&
   client_secret=SECRET
 
+Genellikle spa larda implict flow kullanılıyor ve bu nispeten basitleştirilmiş bir akış clienta direkt accsess token veriliyor
+
 
 #### test edilmesi gerekebilir
 - signup 403 (uzak masaüstüne ssh ile girince sign up çalışmıyor)
-- game 400 (localde çalışıyor aynı ağdaki cihaz girdiğinde çalışmıyor 400 veriyor)
+- game 400 (localde çalışıyor aynı ağdaki cihaz girdiğinde çalışmıyor 400 veriyor) ✅ çözüldü
 
 
 ### Yapılacaklar

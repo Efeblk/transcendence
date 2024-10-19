@@ -449,3 +449,111 @@ function handleFriendRequest(friendId, action) {
         console.error('Error handling friend request:', error);
     });
 }
+
+// ! burda yüklemeye çalıştım ama olmadı
+// function sicriptiyulelan() {
+//     console.log('fortytwoAuth.js script is being loaded into the <head> element.');
+
+//     // Yeni bir script elementi oluşturuyoruz
+//     const script = document.createElement('script');
+//     script.src = '/static/user_management/fortytwoAuth.js';
+//     script.onload = () => {
+//         console.log('fortytwoAuth.js loaded successfully into the <head>.');
+//     };
+//     script.onerror = (error) => {
+//         console.error('Error loading fortytwoAuth.js:', error);
+//     };
+
+//     // Scripti <head> içerisine ekliyoruz
+//     const headElement = document.head;
+//     if (headElement) {
+//         headElement.appendChild(script);  // Scripti <head> içine ekliyoruz
+//     } else {
+//         console.error('<head> element not found!');
+//     }
+// }
+
+// document.addEventListener('DOMContentLoaded', () => {
+//     sicriptiyulelan();
+// });
+
+// ! direkt burdan ekledim kısaca
+// const initiate42Login = async () => {
+//     try {
+//       const response = await fetch('/api/auth/42/login/');
+//       const data = await response.json();
+      
+//       if (data.auth_url) {
+//         // Redirect to 42's authorization page
+//         window.location.href = data.auth_url;
+//       }
+//     } catch (error) {
+//       console.log('Failed to initiate 42 login:');
+//     }
+//   };
+
+const initiate42Login = async () => {
+    try {
+        // İsteği at
+        const response = await fetch('/api/auth/42/login/');
+        console.log('Response type:', response.headers.get('content-type'));
+        
+        // Response içeriğini kontrol et
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // JSON'a çevir
+        console.log('Received data:?');
+        const data = await response.json();
+        console.log('Received data:', data);
+        
+        // auth_url var mı kontrol et
+        if (!data.auth_url) {
+            throw new Error('No auth_url in response');
+        }
+        
+        // 42'ye yönlendir
+        window.location.href = data.auth_url;
+        
+    } catch (error) {
+        // console.error('Login error:', error);
+        alert('Login failed: ' + error.message);
+    }
+};
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    handleLoginSuccess();
+  });
+  
+//   function handleLoginSuccess() {
+//     if (window.location.hash === '#/login-success') {
+//       // Hash'i temizleyelim ve UI'yi güncelleyelim
+//       window.location.hash = '';
+      
+//       // Kullanıcı oturum açtı olarak işaretleniyor
+//       console.log('User logged in successfully!');
+//       // Burada uygulama durumunu güncelleyebilir ya da kullanıcı profili gibi bilgileri çekebilirsiniz.
+//     }
+//   }
+
+function handleLoginSuccess() {
+    if (window.location.hash.startsWith('#/login-success')) {
+      const urlParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = urlParams.get('access_token');
+      console.log("debug\n");
+      if (accessToken) {
+        // Token'ı localStorage'a kaydet
+        localStorage.setItem('access_token', accessToken);
+        alert('Access token set edildi!');
+        
+        // Kullanıcıyı profile sayfasına yönlendir
+        window.location.href = '/profile';
+      }
+      else {
+        console.log("elsed\n");
+      }
+    }
+  }
+  

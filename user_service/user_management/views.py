@@ -1,7 +1,7 @@
 import json
 from .models import Users, Friendship
 from rest_framework import generics
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from .serializers import UsersSerializer
 from django.http import JsonResponse
 from django.contrib.auth.hashers import make_password, check_password
@@ -14,6 +14,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
 from django.db.models import Q
+from django.conf import settings
+import requests
+import urllib.parse
+import secrets
+from django.contrib.auth import login
 
 
 class UsersViewSet(generics.ListCreateAPIView):
@@ -65,7 +70,7 @@ def get_tokens_for_user(user):
     }
 
 @csrf_exempt
-def login(request):
+def login_(request):
     if request.method == 'POST':
         body = json.loads(request.body)
         username = body.get('username')
@@ -220,3 +225,68 @@ def decline_friend_request(request, friend_id):
     except Friendship.DoesNotExist:
         return Response({'error': 'Friend request not found'}, status=404)
 
+@csrf_exempt
+def fortytwo_login(request):
+    state = secrets.token_urlsafe(32)
+    request.session['oauth_state'] = state
+
+    params = {
+        'client_id': settings.FORTYTWO_CLIENT_ID,
+        'redirect_uri': settings.FORTYTWO_REDIRECT_URI,
+        'response_type': 'code',
+        'state': state,
+        'scope': 'public'
+    }
+
+    auth_url = f"{settings.FORTYTWO_AUTH_URL}?{urllib.parse.urlencode(params)}"
+    return JsonResponse({'auth_url': auth_url})
+
+def fortytwo_callback(request):
+    code = request.GET.get('code')
+    state = request.GET.get('state')
+    
+    # Verify state to prevent CSRF
+    if state != request.session.get('oauth_state'):
+        return JsonResponse({'error': 'Invalid state parameter'}, status=400)
+    
+    # Exchange code for access token
+    token_response = requests.post(settings.FORTYTWO_TOKEN_URL, data={
+        'client_id': settings.FORTYTWO_CLIENT_ID,
+        'client_secret': settings.FORTYTWO_CLIENT_SECRET,
+        'code': code,
+        'redirect_uri': settings.FORTYTWO_REDIRECT_URI,
+        'grant_type': 'authorization_code'
+    })
+    
+    if not token_response.ok:
+        return JsonResponse({'error': 'Failed to obtain access token'}, status=400)
+    
+    access_token = token_response.json()['access_token']
+    
+    # Get user info from 42 API
+    user_response = requests.get(settings.FORTYTWO_USER_URL, headers={
+        'Authorization': f'Bearer {access_token}'
+    })
+    
+    if not user_response.ok:
+        return JsonResponse({'error': 'Failed to get user info'}, status=400)
+    
+    user_data = user_response.json()
+    
+    # Create or get user
+# friendship, created = Friendship.objects.get_or_create(user=user, friend=friend)
+
+    user, created = Users.objects.get_or_create(
+        username=user_data['login'],
+        defaults={
+            'email': user_data['email'],
+            'first_name': user_data.get('first_name', ''),
+            'last_name': user_data.get('last_name', '')
+        }
+    )
+    
+    # Log the user in
+    login_(user_data)
+    
+    # Redirect to frontend with success
+    return redirect('/#/login-success')
