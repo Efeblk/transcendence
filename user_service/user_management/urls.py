@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UsersViewSet, signup, login, login_view, signup_view, search_people, user_profile, profile_view, search_view, add_friend, list_friend_requests, accept_friend_request, decline_friend_request, friends, unfriend_friend, edit_profile_view, edit_profile
+from .views import UsersViewSet, signup, login, login_view, signup_view, search_people, user_profile, profile_view, search_view, add_friend, list_friend_requests, accept_friend_request, decline_friend_request, friends, unfriend_friend, edit_profile_view, edit_profile, logout
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -17,6 +17,7 @@ urlpatterns = [
     path('rq_signup/', signup, name='rq_signup'),
     path('signup/', signup_view, name='signup'),
     path('profile/', profile_view, name='profile'),
+    path('logout/', logout, name='logout'),
     path('edit_profile/', edit_profile_view, name='edit_profile'),
     path('rq_edit_profile/', edit_profile, name='rq_edit_profile'),
     path('search/', search_view, name='search'),
@@ -28,6 +29,7 @@ urlpatterns = [
     path('friendships/accept/<int:friend_id>/', accept_friend_request, name='accept_friend_request'),
     path('friendships/decline/<int:friend_id>/', decline_friend_request, name='decline_friend_request'),    
     path('friendships/unfriend/<int:friend_id>/', unfriend_friend, name='unfriend_friend'),    
+    path('verify_email/<int:user_id>/', verify_email, name='verify_email'),
 ]
 
 if settings.DEBUG:

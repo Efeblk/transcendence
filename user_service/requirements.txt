@@ -4,4 +4,6 @@ psycopg2-binary==2.9.6
 
 django-allauth
 djangorestframework-simplejwt
+django-otp
+django-two-factor-auth
 Pillow

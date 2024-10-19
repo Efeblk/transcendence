@@ -38,3 +38,15 @@ class Friendship(models.Model):
         ]
     def __str__(self):
         return f'{self.user} is friends with {self.friend}'
+
+
+class EmailVerificationCode(models.Model):
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_valid(self):
+        # Check if the code is still valid (e.g., valid for 10 minutes)
+        return (timezone.now() - self.created_at).total_seconds() < 600
+
+

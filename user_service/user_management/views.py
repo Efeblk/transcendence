@@ -17,7 +17,8 @@ from django.db.models import Q
 import os
 from django.conf import settings
 from rest_framework import status
-
+import pyotp
+import qrcode
 
 class UsersViewSet(generics.ListCreateAPIView):
     queryset = Users.objects.all()
@@ -52,9 +53,9 @@ def signup(request):
             username=username,
             user_email=email,
             password=make_password(password),
-            user_level=1.0,
+            user_level=0.0,
             user_type='normal',
-            user_status='active'
+            user_status='offline'
         )
         user.save()
 
@@ -82,6 +83,8 @@ def login(request):
         # Check the password
         if check_password(password, user.password):
             tokens = get_tokens_for_user(user)
+            user.user_status="online"
+            user.save()
             return JsonResponse({'success': True, 'message': 'Login successful', 'access_token': tokens['access'], 'refresh_token': tokens['refresh']}, status=200)
         else:
             return JsonResponse({'message': 'Invalid username or password.'}, status=400)
@@ -271,3 +274,13 @@ def edit_profile(request):
     user.save()
 
     return Response({'message': 'Profile updated successfully'}, status=200)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    try:
+        request.user.user_status = "offline"
+        request.user.save()
+        return Response({'message': 'You logged out.'}, status=200)
+    except Friendship.DoesNotExist:
+        return Response({'error': 'You could not log out'}, status=500)

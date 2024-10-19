@@ -186,8 +186,30 @@ function router() {
                     app.innerHTML = htmlContent;
 
                     const LogOut = document.getElementById('LogOut');
-                    LogOut.addEventListener('click', function() {
-                        logout();
+                    LogOut.addEventListener('click', async function(event) {
+                        event.preventDefault(); // Prevent form submission
+                        
+                        try {
+                            const response = await fetch('/api/users/logout/', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                }
+                            });
+                    
+                            // Handle different response statuses
+                            if (response.status === 200) {
+                                // Successful logout with no content
+                                localStorage.removeItem('access_token');  // Remove the token
+                                window.location.href = '/login';  // Redirect to login page
+                            } else {
+                                const data = await response.json(); // Parse JSON only if not 204
+                                alert(data.message || 'An error occurred during logout.');
+                            }
+                        } catch (error) {
+                            console.error('Error during logout:', error);
+                            alert('An error occurred during logout. Please try again.');
+                        }
                     });
 
                     const Edit = document.getElementById('Edit');
@@ -482,11 +504,6 @@ window.addEventListener('load', function () {
 
 // Handle browser back/forward buttons
 window.addEventListener('popstate', router);
-
-function logout() {
-    localStorage.removeItem('access_token');  // Remove the token
-    window.location.href = '/login';  // Redirect to login page
-}
 
 function handleFriendRequest(friendId, action) {
     const token = localStorage.getItem('access_token');
