@@ -220,3 +220,14 @@ def decline_friend_request(request, friend_id):
     except Friendship.DoesNotExist:
         return Response({'error': 'Friend request not found'}, status=404)
 
+
+# unfirend a friend
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def unfriend_friend(request, friend_id):
+    try:
+        friendship = Friendship.objects.get(user=friend_id, friend=request.user, status='accepted')
+        #
+        return Response({'message': 'Friend is unfriended.'}, status=201)
+    except Friendship.DoesNotExist:
+        return Response({'error': 'Friendship is not found'}, status=404)

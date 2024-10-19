@@ -306,6 +306,7 @@ function router() {
 
                     const acceptButtons = document.querySelectorAll('.accept-btn');
                     const declineButtons = document.querySelectorAll('.decline-btn');
+                    const unfriendButtons = document.querySelectorAll('.unfriend-btn');
                     
                     acceptButtons.forEach(button => {
                         button.addEventListener('click', function() {
@@ -318,6 +319,13 @@ function router() {
                         button.addEventListener('click', function() {
                             const friendId = this.getAttribute('data-id');
                             handleFriendRequest(friendId, 'decline');
+                        });
+                    });
+
+                    declineButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const friendId = this.getAttribute('data-id');
+                            handleFriendRequest(friendId, 'unfriend');
                         });
                     });
 
@@ -425,7 +433,13 @@ function logout() {
 
 function handleFriendRequest(friendId, action) {
     const token = localStorage.getItem('access_token');
-    const url = action === 'accept' ? `/api/users/friendships/accept/${friendId}/` : `/api/users/friendships/decline/${friendId}/`;
+    if (action === 'accept'){
+        const url = `/api/users/friendships/accept/${friendId}/`;
+    }else if (action === 'decline'){
+        const url = `/api/users/friendships/decline/${friendId}/`;
+    }else{
+        const url = `/api/users/friendships/unfriend/${friendId}/`;
+    }
     
     fetch(url, {
         method: 'POST',

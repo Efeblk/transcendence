@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-6nb&-%m8t^mtc!q6bd=3$ay0j73@&3+aya&%r*o$b(4%n@wi#z
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['192.168.221.130', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -132,6 +132,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Additional locations the staticfiles app will traverse to look for static files
 STATICFILES_DIRS = [
     BASE_DIR / "pingpong/static",  # Assuming game/static is where your custom static files are stored
+    BASE_DIR / "zombie_game/static",
 ]
 
 # Default primary key field type
