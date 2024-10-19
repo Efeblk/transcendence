@@ -188,7 +188,64 @@ function router() {
                     const LogOut = document.getElementById('LogOut');
                     LogOut.addEventListener('click', function() {
                         logout();
+                    });
+
+                    const Edit = document.getElementById('Edit');
+                    Edit.addEventListener('click', function() {
+                        window.location.href = '/edit_profile';
                     }); 
+                })
+                .catch(error => {
+                    console.error('Error loading profile:', error);
+                });
+        }
+    } else if (path === '/edit_profile'){
+        const token = localStorage.getItem('access_token');
+        if (!token)
+            window.location.href = '/login';
+        else
+        {
+            fetch('/api/users/edit_profile', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}` // Include the token here
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load profile');
+                    }
+                    return response.text();  // Return HTML content
+                })
+                .then(htmlContent => {
+                    app.innerHTML = htmlContent;
+                    document.getElementById('edit-profile-form').addEventListener('submit', function(event) {
+                        event.preventDefault(); // Prevent the default form submission
+                
+                        const formData = new FormData(this);
+                
+                        fetch('/api/users/rq_edit_profile', {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(Object.fromEntries(formData)) // Convert form data to JSON
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Failed to update profile');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            alert(data.message); // Show success message
+                        })
+                        .catch(error => {
+                            console.error('Error updating profile:', error);
+                        });
+                    });
+
                 })
                 .catch(error => {
                     console.error('Error loading profile:', error);
@@ -322,7 +379,7 @@ function router() {
                         });
                     });
 
-                    declineButtons.forEach(button => {
+                    unfriendButtons.forEach(button => {
                         button.addEventListener('click', function() {
                             const friendId = this.getAttribute('data-id');
                             handleFriendRequest(friendId, 'unfriend');
@@ -433,12 +490,11 @@ function logout() {
 
 function handleFriendRequest(friendId, action) {
     const token = localStorage.getItem('access_token');
+    url = `/api/users/friendships/unfriend/${friendId}/`;
     if (action === 'accept'){
-        const url = `/api/users/friendships/accept/${friendId}/`;
+        url = `/api/users/friendships/accept/${friendId}/`;
     }else if (action === 'decline'){
-        const url = `/api/users/friendships/decline/${friendId}/`;
-    }else{
-        const url = `/api/users/friendships/unfriend/${friendId}/`;
+        url = `/api/users/friendships/decline/${friendId}/`;
     }
     
     fetch(url, {

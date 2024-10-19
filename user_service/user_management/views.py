@@ -104,6 +104,17 @@ def profile_view(request):
     }
     return Response(context, template_name='user_service/profile.html')
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@renderer_classes([TemplateHTMLRenderer])
+def edit_profile_view(request):
+    context = {
+        'user': request.user,
+    }
+    return Response(context, template_name='user_service/edit_profile.html')
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @renderer_classes([TemplateHTMLRenderer])
@@ -227,7 +238,22 @@ def decline_friend_request(request, friend_id):
 def unfriend_friend(request, friend_id):
     try:
         friendship = Friendship.objects.get(user=friend_id, friend=request.user, status='accepted')
-        #
-        return Response({'message': 'Friend is unfriended.'}, status=201)
+        friendship.delete()
+        return Response({'message': 'Friend is unfriended.'}, status=204)
     except Friendship.DoesNotExist:
         return Response({'error': 'Friendship is not found'}, status=404)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def edit_profile(request):
+    user = request.user
+    data = request.data
+
+    user.username = data.get('username', user.username)
+    user.user_email = data.get('user_email', user.user_email)
+    if 'profile_picture' in request.FILES:
+        user.profile_picture = request.FILES['profile_picture']
+    user.save()
+
+    return Response({'message': 'Profile updated successfully'}, status=200)
