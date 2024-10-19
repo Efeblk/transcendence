@@ -13,7 +13,8 @@ class Users(AbstractUser):
     user_created_on = models.DateTimeField(auto_now_add=True)
     user_updated_on = models.DateTimeField(auto_now=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True, default='profile_pictures/default.jpg')
-
+    two_fa_code = models.CharField(max_length=6, null=True, blank=True)
+    
     def __str__(self):
         return f"User - ${self.id} ${self.user_name}"
 

@@ -1,24 +1,25 @@
 import json
-from .models import Users, Friendship
-from rest_framework import generics
-from django.shortcuts import render, get_object_or_404
+import os
+from .models import Users, Friendship, EmailVerificationCode
+from django.db.models import Q
 from .serializers import UsersSerializer
-from django.http import JsonResponse
-from django.contrib.auth.hashers import make_password, check_password
-from django.contrib.auth import authenticate
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
+from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
-from django.db.models import Q
-import os
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.utils.crypto import get_random_string
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.core.signing import Signer
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-from rest_framework import status
-import pyotp
-import qrcode
 
 class UsersViewSet(generics.ListCreateAPIView):
     queryset = Users.objects.all()
@@ -32,6 +33,22 @@ def login_view(request):
     
 def search_view(request):
     return render(request, 'user_service/search.html')
+
+def verify_2fa_view(request):
+    return render(request, 'user_service/enter_2fa_code.html')
+
+def send_2fa_code(user):
+    # Generate a random 6-digit code
+    code = get_random_string(length=6, allowed_chars='0123456789')
+    user.two_fa_code = code  # Store the code in the model
+    user.save()
+    
+    subject = 'Your 2FA Code'
+    message = f'Your one-time code is: {code}'
+    from_email = settings.DEFAULT_FROM_EMAIL
+
+    send_mail(subject, message, from_email, [user.user_email])
+
 
 def signup(request):
     if request.method == 'POST':
@@ -59,7 +76,7 @@ def signup(request):
         )
         user.save()
 
-        return JsonResponse({'success': True, 'message': 'User created successfully!'})
+        return JsonResponse({'success': True, 'message': 'User created successfully! Please check your email to verify your account.'})
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -67,6 +84,25 @@ def get_tokens_for_user(user):
         'refresh': str(refresh),
         'access': str(refresh.access_token),
     }
+
+@csrf_exempt
+def check_2fa_code(request):
+    if request.method == 'POST':
+        body = json.loads(request.body)
+        username = body.get('username')
+        code_entered = body.get('code')  # Only get this if it's a 2FA step
+        try:
+            user = Users.objects.get(username=username)
+        except Users.DoesNotExist:
+            return JsonResponse({'message': 'Invalid username or password.'}, status=400)
+        if code_entered == user.two_fa_code:
+            tokens = get_tokens_for_user(user)
+            user.user_status = "online"
+            user.save()
+            return JsonResponse({'success': True, 'message': 'Login successful', 'access_token': tokens['access'], 'refresh_token': tokens['refresh']}, status=200)
+        else:
+            return JsonResponse({'message': 'Invalid 2FA code.'}, status=400)
+
 
 @csrf_exempt
 def login(request):
@@ -79,17 +115,15 @@ def login(request):
             user = Users.objects.get(username=username)
         except Users.DoesNotExist:
             return JsonResponse({'message': 'Invalid username or password.'}, status=400)
-
-        # Check the password
+        
+        # First login step
         if check_password(password, user.password):
-            tokens = get_tokens_for_user(user)
-            user.user_status="online"
-            user.save()
-            return JsonResponse({'success': True, 'message': 'Login successful', 'access_token': tokens['access'], 'refresh_token': tokens['refresh']}, status=200)
-        else:
-            return JsonResponse({'message': 'Invalid username or password.'}, status=400)
-
-
+            send_2fa_code(user)  # Send the 2FA code
+            return JsonResponse({'success': True, 'message': '2FA code sent to email. Enter the code to continue.'}, status=200)
+        
+        return JsonResponse({'message': 'Invalid username or password.'}, status=400)
+    
+    return JsonResponse({'message': 'Invalid request method.'}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -284,3 +318,4 @@ def logout(request):
         return Response({'message': 'You logged out.'}, status=200)
     except Friendship.DoesNotExist:
         return Response({'error': 'You could not log out'}, status=500)
+

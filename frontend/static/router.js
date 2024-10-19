@@ -65,8 +65,7 @@ function router() {
             .catch(error => {
                 console.error('Error loading page:', error);
             });
-    }
-    else if (path === '/login') {
+    }else if (path === '/login') {
         const token = localStorage.getItem('access_token');
         if (token)
             window.location.href = '/profile';
@@ -101,12 +100,11 @@ function router() {
                         const data = await response.json();
     
                         if (data.success) {
-                            localStorage.setItem('access_token', data.access_token);
-                            alert('Login successful!');
-                            window.location.href = '/profile';
+                            //localStorage.setItem('access_token', data.access_token);
+                            alert('2FA code sent to email. Enter the code to continue.');
+                            window.location.href = `/verify-2fa?username=${encodeURIComponent(username)}`;
                         } else {
-                            const errorMessage = document.getElementById('error-message');
-                            errorMessage.textContent = data.message;
+                            alert(data.message);
                         }
                     });
                 
@@ -116,7 +114,7 @@ function router() {
                     }); 
                 }).catch(error => { 
                     console.error('Error loading login page:', error); 
-                });    
+                });
         }
     } else if (path === '/signup') {
         fetch('/api/users/signup')
@@ -160,6 +158,52 @@ function router() {
         }).catch(error => {
             console.error('Error loading sign-up page:', error);
         });
+    }else if (path === '/verify-2fa'){
+        const token = localStorage.getItem('access_token');
+        if (token)
+            window.location.href = '/profile';
+        else
+        {
+            const username = new URLSearchParams(window.location.search).get('username');
+
+            fetch(`/api/users/verify-2fa/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load verification page');
+                }
+                return response.text();
+            })
+            .then(htmlContent => {
+                app.innerHTML = htmlContent;
+        
+                // Handle form submission
+                const verificationForm = document.getElementById('verification-form');
+                verificationForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+        
+                    const code = document.getElementById('code').value; // Get the code
+                    const response = await fetch('/api/users/rq_verify-2fa/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ username, code }),
+                    });
+                    const data = await response.json();
+    
+                    if (data.success) {
+                        localStorage.setItem('access_token', data.access_token); // Store the access token
+                        window.location.href = '/profile'; // Redirect to profile after successful login
+                    } else {
+                        messageDiv.textContent = data.message;
+                        messageDiv.style.color = 'red';
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching the verification page:', error);
+            });
+        }
     }else if (path === '/profile'){
         const token = localStorage.getItem('access_token');
         if (!token)
