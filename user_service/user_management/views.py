@@ -14,6 +14,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
 from django.db.models import Q
+import os
+from django.conf import settings
+from rest_framework import status
 
 
 class UsersViewSet(generics.ListCreateAPIView):
@@ -253,7 +256,18 @@ def edit_profile(request):
     user.username = data.get('username', user.username)
     user.user_email = data.get('user_email', user.user_email)
     if 'profile_picture' in request.FILES:
-        user.profile_picture = request.FILES['profile_picture']
+        profile_picture = request.FILES['profile_picture']
+        if profile_picture.size > 2 * 1024 * 1024:  # 2MB in bytes
+            return Response({'error': 'File size must be less than 2MB.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Delete the old profile picture if it's not the default
+        if user.profile_picture.name != 'profile_pictures/default.jpg':
+            old_picture_path = os.path.join(settings.MEDIA_ROOT, user.profile_picture.name)
+            if os.path.isfile(old_picture_path):
+                os.remove(old_picture_path)
+
+        user.profile_picture = profile_picture
+    
     user.save()
 
     return Response({'message': 'Profile updated successfully'}, status=200)

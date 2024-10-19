@@ -223,14 +223,13 @@ function router() {
                         event.preventDefault(); // Prevent the default form submission
                 
                         const formData = new FormData(this);
-                
+
                         fetch('/api/users/rq_edit_profile', {
                             method: 'PUT',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify(Object.fromEntries(formData)) // Convert form data to JSON
+                            body: formData
                         })
                         .then(response => {
                             if (!response.ok) {
@@ -240,6 +239,7 @@ function router() {
                         })
                         .then(data => {
                             alert(data.message); // Show success message
+                            window.location.href = '/profile';
                         })
                         .catch(error => {
                             console.error('Error updating profile:', error);
