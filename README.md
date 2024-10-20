@@ -80,9 +80,6 @@ POST https://auth-server.com/token
 0.5	- bootstrap ✅
 0.5	- postgre ✅
 1	- user management
-> finish the friendship
-> Users can update their information.
-> Users can upload an avatar, with a default option if none is provided.
 > Users can view their online status.
 
 > User profiles display stats, such as wins and losses.
