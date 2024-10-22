@@ -277,11 +277,18 @@ def decline_friend_request(request, friend_id):
 @permission_classes([IsAuthenticated])
 def unfriend_friend(request, friend_id):
     try:
-        friendship = Friendship.objects.get(user=friend_id, friend=request.user, status='accepted')
+        # Try to get the friendship from the request user's perspective
+        friendship = Friendship.objects.get(user=request.user, friend=friend_id, status='accepted')
         friendship.delete()
-        return Response({'message': 'Friend is unfriended.'}, status=204)
+        return Response({'message': 'Friend is unfriended.'}, status=200)
     except Friendship.DoesNotExist:
-        return Response({'error': 'Friendship is not found'}, status=404)
+        # If not found, try from the friend's perspective
+        try:
+            friendship = Friendship.objects.get(user=friend_id, friend=request.user, status='accepted')
+            friendship.delete()
+            return Response({'message': 'Friend is unfriended.'}, status=200)
+        except Friendship.DoesNotExist:
+            return Response({'error': 'Friendship not found.'}, status=404)
 
 
 @api_view(['PUT'])
