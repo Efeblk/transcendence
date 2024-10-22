@@ -18,8 +18,6 @@ from django.conf import settings
 import requests
 import urllib.parse
 import secrets
-from django.contrib.auth import login
-
 
 class UsersViewSet(generics.ListCreateAPIView):
     queryset = Users.objects.all()
@@ -279,11 +277,8 @@ def fortytwo_callback(request):
         s = cursus_users[0]
     campus = user_data.get('campus', [])
     c = campus[0]
-    
-    # Create or get user
-# friendship, created = Friendship.objects.get_or_create(user=user, friend=friend)
 
-    user, created = Users.objects.get_or_create(
+    Users.objects.get_or_create(
         id=user_data['id'],  # 42 API'den alınan benzersiz kullanıcı kimliği
         defaults={
             'username': user_data['login'],
@@ -305,11 +300,33 @@ def fortytwo_callback(request):
             'user_status': 'active',  # Varsayılan olarak 'active' durum
         }
     )
-    
-    # Log the user in
-    login(request, user)
 
-    # request.session['access_token'] = access_token
+    return redirect(f"/#/login-success?username={user_data['login']}")
 
-    # return redirect('/#/login-success')
-    return redirect(f"/#/login-success?access_token={access_token}")
+@csrf_exempt
+def login42(request):
+    if request.method == 'POST':
+        state = secrets.token_urlsafe(32)
+        request.session['oauth_state'] = state
+
+        try:
+            body = json.loads(request.body)
+            username = body.get('username')
+
+            if not username:
+                return JsonResponse({'message': 'Username is required.'}, status=400)
+
+            user = Users.objects.get(username=username)
+            tokens = get_tokens_for_user(user)
+            return JsonResponse({
+                'success': True,
+                'message': 'Login successful',
+                'access_token': tokens['access'],
+                'refresh_token': tokens['refresh'],
+            }, status=200)
+        except Users.DoesNotExist:
+            return JsonResponse({'message': 'Invalid username.'}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'message': 'Invalid JSON data.'}, status=400)
+    else:
+        return JsonResponse({'message': 'Invalid request method.'}, status=405)
