@@ -25,7 +25,8 @@
         Friendship Requests: {{requests}}
     </a>
 </p>
-<button id="LogOut" class="btn btn-secondary">LogOut</button> {% endcomment %}
+<button id="LogOut" class="btn btn-secondary">LogOut</button>
+<button id="Edit" class="btn btn-secondary">Edit</button>
 
 
 {% comment %} <div class="container my-5">
@@ -54,7 +55,7 @@
                 <h5>Skills</h5>
                 <ul class="list-group">
                     {% for skill in user.user_skillsjson %}
-                        <li class="list-group-item">{{ skill.name }} - Level: {{ skill.level }}</li>
+                    <li class="list-group-item">{{ skill.name }} - Level: {{ skill.level }}</li>
                     {% endfor %}
                 </ul>
             </div>
@@ -111,4 +112,3 @@
 
 
 
-<button id="Edit" class="btn btn-secondary">Edit</button>

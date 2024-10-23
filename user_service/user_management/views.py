@@ -1,24 +1,23 @@
 import json
 import os
 import secrets
+import requests
+import urllib.parse
 from .models import Users, Friendship, EmailVerificationCode
-from rest_framework import generics
-from django.shortcuts import render, get_object_or_404, redirect
 from .serializers import UsersSerializer
+from rest_framework import generics
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
-import requests
-import urllib.parse
-from django.db.models import Q
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db.models import Q
 from django.utils.crypto import get_random_string
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.core.signing import Signer
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import make_password, check_password
@@ -277,6 +276,25 @@ def decline_friend_request(request, friend_id):
     except Friendship.DoesNotExist:
         return Response({'error': 'Friend request not found'}, status=404)
 
+# unfirend a friend
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def unfriend_friend(request, friend_id):
+    try:
+        # Try to get the friendship from the request user's perspective
+        friendship = Friendship.objects.get(user=request.user, friend=friend_id, status='accepted')
+        friendship.delete()
+        return Response({'message': 'Friend is unfriended.'}, status=200)
+    except Friendship.DoesNotExist:
+        # If not found, try from the friend's perspective
+        try:
+            friendship = Friendship.objects.get(user=friend_id, friend=request.user, status='accepted')
+            friendship.delete()
+            return Response({'message': 'Friend is unfriended.'}, status=200)
+        except Friendship.DoesNotExist:
+            return Response({'error': 'Friendship not found.'}, status=404)
+
+
 @csrf_exempt
 def fortytwo_login(request):
     state = secrets.token_urlsafe(32)
@@ -384,3 +402,40 @@ def login42(request):
             return JsonResponse({'message': 'Invalid JSON data.'}, status=400)
     else:
         return JsonResponse({'message': 'Invalid request method.'}, status=405)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def edit_profile(request):
+    user = request.user
+    data = request.data
+
+    user.username = data.get('username', user.username)
+    user.user_email = data.get('user_email', user.user_email)
+    if 'profile_picture' in request.FILES:
+        profile_picture = request.FILES['profile_picture']
+        if profile_picture.size > 2 * 1024 * 1024:  # 2MB in bytes
+            return Response({'error': 'File size must be less than 2MB.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Delete the old profile picture if it's not the default
+        if user.profile_picture.name != 'profile_pictures/default.jpg':
+            old_picture_path = os.path.join(settings.MEDIA_ROOT, user.profile_picture.name)
+            if os.path.isfile(old_picture_path):
+                os.remove(old_picture_path)
+
+        user.profile_picture = profile_picture
+    
+    user.save()
+
+    return Response({'message': 'Profile updated successfully'}, status=200)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    try:
+        request.user.user_status = "offline"
+        request.user.save()
+        return Response({'message': 'You logged out.'}, status=200)
+    except Friendship.DoesNotExist:
+        return Response({'error': 'You could not log out'}, status=500)
+
