@@ -27,6 +27,13 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
+# ! cache engellemek için
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
 
 # Application definition
 

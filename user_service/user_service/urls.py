@@ -16,8 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from user_management import views
+# import debug_toolbar
 
 urlpatterns = [
+    # path('__debug__/', include(debug_toolbar.urls)),
+
     path('api/users/admin/', admin.site.urls),
     path('api/users/', include('user_management.urls')),
+
+    path('api/auth/42/login/', views.fortytwo_login, name='fortytwo_login'),
+    path('api/auth/42/callback/', views.fortytwo_callback, name='fortytwo_callback'),
 ]

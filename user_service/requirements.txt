@@ -7,3 +7,6 @@ djangorestframework-simplejwt
 django-two-factor-auth
 phonenumbers
 Pillow
+
+requests  # For making HTTP requests to 42's API
+python-dotenv  # For managing environment variables

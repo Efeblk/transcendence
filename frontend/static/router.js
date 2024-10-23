@@ -580,3 +580,89 @@ function handleFriendRequest(friendId, action) {
         console.error('Error handling friend request:', error);
     });
 }
+
+
+
+
+// ! maygen
+const initiate42Login = async () => {
+    try {
+        // İsteği at
+        const response = await fetch('/api/auth/42/login/');
+        console.log('Response type:', response.headers.get('content-type'));
+        
+        // Response içeriğini kontrol et
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // JSON'a çevir
+        console.log('Received data:?');
+        const data = await response.json();
+        console.log('Received data:', data);
+        
+        // auth_url var mı kontrol et
+        if (!data.auth_url) {
+            throw new Error('No auth_url in response');
+        }
+        
+        // 42'ye yönlendir
+        window.location.href = data.auth_url;
+        
+    } catch (error) {
+        // console.error('Login error:', error);
+        alert('Login failed: ' + error.message);
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    handleLoginSuccess();
+  });
+
+function getQueryParameterFromHash(param) {
+    // Hash kısmını alalım
+    const hash = window.location.hash;
+
+    // Hash kısmından '?' ve sonrası varsa alalım
+    const queryStringIndex = hash.indexOf('?');
+    if (queryStringIndex === -1) {
+        return null;
+    }
+
+    // Query string'i alalım ve URLSearchParams kullanarak parametreleri işleyelim
+    const queryString = hash.substring(queryStringIndex + 1);
+    const urlParams = new URLSearchParams(queryString);
+
+    // İstenen parametreyi alalım
+    return urlParams.get(param);
+}
+
+async function handleLoginSuccess() {
+    if (window.location.hash.startsWith('#/login-success')) {
+        console.log("handle login function working....");
+        
+        const username = getQueryParameterFromHash('username');
+        console.log(username);
+
+
+        const response = await fetch('/api/users/login42/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username })
+        });
+        console.log("AAAAAAAAAAAAAAAAA\n")
+
+        const data = await response.json();
+    
+        if (data.success) {
+            localStorage.setItem('access_token', data.access_token);
+            alert('Login successful!');
+            window.location.href = '/profile';
+        } else {
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.textContent = data.message;
+        }
+    }
+}
