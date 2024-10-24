@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-9a40&=$$jts4c2&$m^(2pxjj$e14w@@0$obp1f*$6l7n-w91q6'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -36,7 +36,7 @@ CACHES = {
 
 # 42 login için
 FORTYTWO_CLIENT_ID = 'u-s4t2ud-794e440cea6e16e95119ebeae9625c6958a45a747d75975f81b528e02e0fb2e5'
-FORTYTWO_CLIENT_SECRET = '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'
+# ! secret
 FORTYTWO_REDIRECT_URI = 'http://localhost/api/auth/42/callback'
 FORTYTWO_AUTH_URL = 'https://api.intra.42.fr/oauth/authorize'
 FORTYTWO_TOKEN_URL = 'https://api.intra.42.fr/oauth/token'
@@ -126,8 +126,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'transcendence.2fa.mail@gmail.com'
-EMAIL_HOST_PASSWORD = 'herv xoty wdeo mnms '
-
+# ! secret
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
