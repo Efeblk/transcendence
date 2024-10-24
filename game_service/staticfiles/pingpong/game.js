@@ -28,7 +28,7 @@ class Game {
 
         this.table = new Table(this.scene, texturePath);
         this.player = new Player(this.scene, gameConfig.paddle.positionZ.player, gameConfig.paddle.color.player);
-        this.opponent = null;
+        this.opponent = null; // Placeholder for opponent (AI or Player 2)
         this.ball = new Ball(this.scene);
 
         this.setupLights();
@@ -69,6 +69,16 @@ class Game {
         document.addEventListener('keyup', (event) => this.player.handleKeyUp(event));
     }
 
+    setupControlsOpponent() {
+        document.addEventListener('keydown', (event) => this.opponent.handleKeyDown(event));
+        document.addEventListener('keyup', (event) => this.opponent.handleKeyUp(event));
+    }
+
+    destroyControlsOpponent() {
+        document.removeEventListener('keydown', (event) => this.opponent.handleKeyDown(event));
+        document.removeEventListener('keyup', (event) => this.opponent.handleKeyUp(event));
+    }
+
     animate() {
         if (!this.isRunning) return;
 
@@ -78,7 +88,7 @@ class Game {
         this.ball.update();
 
         if (this.opponent) {
-            this.opponent.update(this.ball); // Update AI paddle if present
+            this.opponent.update(this.ball); // Update AI or player 2
         }
 
         this.checkCollisions();
@@ -94,9 +104,9 @@ class Game {
             console.log('Player hit the ball, speed:', this.ball.speed);
         }
 
-        if (this.opponent && this.ball.isCollidingWith(this.opponent)) {
+        if (this.opponent && this.ball.isCollidingWith(this.opponent.getPaddle())) {
             this.ball.bounce();
-            console.log('AI hit the ball, speed:', this.ball.speed);
+            console.log('Opponent hit the ball, speed:', this.ball.speed);
         }
     }
 
@@ -118,7 +128,7 @@ class Game {
 
     endGame() {
         this.isRunning = false;
-        const winner = this.playerScore > this.aiScore ? "Player" : "AI";
+        const winner = this.playerScore > this.aiScore ? "Player" : "Opponent";
 
         this.api.saveGameData('Player 1', this.aiScore, this.playerScore, winner)
             .then(data => console.log('Game result saved:', data))
@@ -130,7 +140,7 @@ class Game {
     reset() {
         this.ball.reset();
         this.player.getPaddle().mesh.position.x = 0;
-        if (this.opponent) this.opponent.mesh.position.x = 0; // Reset AI paddle position
+        if (this.opponent) this.opponent.getPaddle().mesh.position.x = 0;
         this.playerScore = 0;
         this.aiScore = 0;
     }
@@ -141,35 +151,22 @@ class Game {
             return;
         }
 
-        // Setup based on the selected mode
+        // Setup opponent based on the selected mode
         if (mode === 'player') {
             console.log('Starting Player vs Player mode...');
-            this.opponent = null; // No AI in player vs player mode
+            this.opponent = null;
+            this.opponent = new Player(this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai, 'player2');
+            this.setupControlsOpponent();
         } else {
             console.log('Playing against AI...');
-            if (!this.opponent) {
-                this.opponent = new AIpaddle(
-                    this.scene, 
-                    gameConfig.paddle.positionZ.ai, 
-                    gameConfig.paddle.color.ai
-                );
+            this.opponent = null;
+            this.opponent = new AIpaddle(this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai);
+            // Set AI difficulty
+            if (['easy', 'medium', 'hard'].includes(mode)) {
+                this.opponent.setDifficulty(mode);
+                console.log(`AI difficulty set to ${mode}`);
             }
-        }
-
-        // Set AI difficulty if AI mode is selected
-        if (['easy', 'medium', 'hard'].includes(mode) && this.opponent) {
-            switch (mode) {
-                case 'easy':
-                    this.opponent.setDifficulty('easy');
-                    break;
-                case 'medium':
-                    this.opponent.setDifficulty('medium');
-                    break;
-                case 'hard':
-                    this.opponent.setDifficulty('hard');
-                    break;
-            }
-            console.log(`Game started in ${mode} mode with AI speed: ${this.opponent.speed}`);
+            this.destroyControlsOpponent();
         }
 
         this.reset();

@@ -1,14 +1,23 @@
-class AIpaddle extends Paddle {
+class AIpaddle extends Player {
     constructor(scene, zPosition, color, difficulty = 'easy') {
         super(scene, zPosition, color);
+
         this.difficulty = difficulty;
         this.speed = gameConfig.paddle.movementSpeed;
-
         this.updateCounter = 0;
         this.targetX = 0;
-        this.tolerance = 0.1; // Define a small tolerance zone
+        this.tolerance = 0.1; // Small tolerance zone for smoother movement
 
         this.setDifficulty(difficulty);
+    }
+
+    // Override event handlers to prevent AI paddle from responding to key events
+    handleKeyDown(event) {
+        // Do nothing
+    }
+
+    handleKeyUp(event) {
+        // Do nothing
     }
 
     setDifficulty(difficulty) {
@@ -46,19 +55,19 @@ class AIpaddle extends Paddle {
             this.updateCounter = 0;
         }
 
-        const aiPaddleX = this.mesh.position.x;
+        const aiPaddleX = this.paddle.mesh.position.x; // Access paddle's position
         const distanceToTarget = Math.abs(this.targetX - aiPaddleX);
 
         // Move only if the distance to target is greater than tolerance
         if (distanceToTarget > this.tolerance) {
             if (this.targetX < aiPaddleX) {
-                this.moveLeft(this.speed); // Move left at constant speed
+                this.paddle.moveLeft(this.speed); // Move left at constant speed
             } else if (this.targetX > aiPaddleX) {
-                this.moveRight(this.speed); // Move right at constant speed
+                this.paddle.moveRight(this.speed); // Move right at constant speed
             }
         }
 
         // Debugging: Log the AI paddle's position and target
-        console.log(`AI Paddle Position: ${this.mesh.position.x}, TargetX: ${this.targetX}`);
+        console.log(`AI Paddle Position: ${aiPaddleX}, TargetX: ${this.targetX}`);
     }
 }

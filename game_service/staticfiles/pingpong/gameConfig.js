@@ -53,4 +53,12 @@ const gameConfig = {
         direction : { x: 0.02, z: 0.05 },  // Initial direction of the ball
         colorOffset: 0,  // Offset for color oscillation
     },
+    player1: {
+        left : 'ArrowLeft',
+        right : 'ArrowRight',
+    },
+    player2: {
+        left : 'a',
+        right : 'd',
+    },
 };
