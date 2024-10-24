@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9a40&=$$jts4c2&$m^(2pxjj$e14w@@0$obp1f*$6l7n-w91q6'
+SECRET_KEY = os.getenv('SECRET_KEY_USER')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -35,9 +36,9 @@ CACHES = {
 }
 
 # 42 login için
-FORTYTWO_CLIENT_ID = 'u-s4t2ud-794e440cea6e16e95119ebeae9625c6958a45a747d75975f81b528e02e0fb2e5'
-# ! secret
-FORTYTWO_REDIRECT_URI = 'http://localhost/api/auth/42/callback'
+FORTYTWO_CLIENT_ID = os.getenv('FORTYTWO_CLIENT_ID')
+FORTYTWO_CLIENT_SECRET = os.getenv('FORTYTWO_CLIENT_SECRET')
+FORTYTWO_REDIRECT_URI = 'https://localhost/api/auth/42/callback'
 FORTYTWO_AUTH_URL = 'https://api.intra.42.fr/oauth/authorize'
 FORTYTWO_TOKEN_URL = 'https://api.intra.42.fr/oauth/token'
 FORTYTWO_USER_URL = 'https://api.intra.42.fr/v2/me'
@@ -126,24 +127,18 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'transcendence.2fa.mail@gmail.com'
-# ! secret
+EMAIL_HOST_PASSWORD= os.getenv('EMAIL_HOST_PASSWORD')
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'user_db',
-        'USER': 'postgres_user',
-        'PASSWORD': 'postgres_password',
+        'NAME': os.getenv('USER_POSTGRESQL_DB_NAME'),
+        'USER': os.getenv('USER_POSTGRESQL_USER'),
+        'PASSWORD': os.getenv('USER_POSTGRESQL_PASS'),
         'HOST': 'user_db',  # The service name from docker-compose
         'PORT': '5432',
     }

@@ -3,10 +3,12 @@ version: '3.8'
 services:
   user_db:
     image: postgres:13
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: postgres_user
-      POSTGRES_PASSWORD: postgres_password
-      POSTGRES_DB: user_db
+      POSTGRES_USER: ${USER_POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${USER_POSTGRESQL_PASS}
+      POSTGRES_DB: ${USER_POSTGRESQL_DB_NAME}
     networks:
       - app-network
     volumes:
@@ -14,7 +16,7 @@ services:
     ports:
       - "5433:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres_user -d user_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${USER_POSTGRESQL_USER} -d ${USER_POSTGRESQL_DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,16 +24,18 @@ services:
   # PostgreSQL Database Service
   game_db:
     image: postgres:13
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: game_db
+      POSTGRES_USER: ${GAME_POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${GAME_POSTGRESQL_PASS}
+      POSTGRES_DB: ${GAME_POSTGRESQL_DB_NAME}
     volumes:
       - game_db:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${GAME_POSTGRESQL_USER} -d ${GAME_POSTGRESQL_DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,8 +52,10 @@ services:
         condition: service_healthy
     networks:
       - app-network
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: postgres://postgres_user:postgres_password@user_db:5432/user_db
+      DATABASE_URL: ${USER_SERVICE_DATABASE_URL}
     entrypoint: /app2/entrypoint.sh  # This will trigger the entrypoint script
     
   # Django (Backend) Service
@@ -65,8 +71,10 @@ services:
     depends_on:
       game_db:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: postgres://postgres:password@game_db:5432/game_db
+      DATABASE_URL: ${GAME_SERVICE_DATABASE_URL}
     entrypoint: /app/entrypoint.sh  # This will trigger the entrypoint script
 
   # Nginx Service (Merged with Frontend)
