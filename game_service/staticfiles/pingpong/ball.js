@@ -65,7 +65,7 @@ class Ball {
         this.direction.z = -this.direction.z;  // Reverse the direction on collision with paddle
         
         // Cap the speed to avoid excessive increases
-        this.speed = Math.min(this.speed + 0.01, this.maxSpeed);
+        this.speed = Math.min(this.speed + gameConfig.ball.addSpeed, this.maxSpeed);
 
         // Slightly move the ball away from the paddle to prevent immediate re-collision
         this.mesh.position.z += this.direction.z * 0.1;

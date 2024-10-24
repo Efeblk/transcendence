@@ -3,7 +3,7 @@ class Player {
         this.paddle = new Paddle(scene, zPosition, color);
         this.moveLeftActive = false;
         this.moveRightActive = false;
-        this.movementSpeed = gameConfig.paddle.movementSpeed.player;
+        this.movementSpeed = gameConfig.paddle.movementSpeed;
     }
 
     handleKeyDown(event) {

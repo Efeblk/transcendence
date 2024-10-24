@@ -125,13 +125,13 @@ class Game {
         }
         switch (difficulty) {
             case 'easy':
-                this.aiPaddle.speed = gameConfig.paddle.movementSpeed.easyAI;
+                this.aiPaddle.setDifficulty('easy');
                 break;
             case 'medium':
-                this.aiPaddle.speed = gameConfig.paddle.movementSpeed.mediumAI;
+                this.aiPaddle.setDifficulty('medium');
                 break;
             case 'hard':
-                this.aiPaddle.speed = gameConfig.paddle.movementSpeed.hardAI;
+                this.aiPaddle.setDifficulty('hard');
                 break;
             default:
                 break;
