@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6nb&-%m8t^mtc!q6bd=3$ay0j73@&3+aya&%r*o$b(4%n@wi#z'
-
+SECRET_KEY = os.getenv('SECRET_KEY_GAME')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['192.168.221.130', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['*']
+
+# ! cache engellemek için
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
 
 
 # Application definition
@@ -79,9 +86,9 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'game_db',
-        'USER': 'postgres',
-        'PASSWORD': 'password',
+        'NAME': os.getenv('GAME_POSTGRESQL_DB_NAME'),
+        'USER': os.getenv('GAME_POSTGRESQL_USER'),
+        'PASSWORD': os.getenv('GAME_POSTGRESQL_PASS'),
         'HOST': 'game_db',  # The service name from docker-compose
         'PORT': '5432',
     }
@@ -132,6 +139,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Additional locations the staticfiles app will traverse to look for static files
 STATICFILES_DIRS = [
     BASE_DIR / "pingpong/static",  # Assuming game/static is where your custom static files are stored
+    BASE_DIR / "zombie_game/static",
 ]
 
 # Default primary key field type

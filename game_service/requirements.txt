@@ -2,3 +2,5 @@ Django==4.2.5               # The latest stable version of Django as of 2024
 djangorestframework==3.14.0  # For building APIs (if using Django REST Framework)
 psycopg2-binary==2.9.6       # PostgreSQL adapter for Django
 gunicorn==20.1.0             # WSGI HTTP server for production
+
+python-dotenv

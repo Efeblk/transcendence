@@ -46,10 +46,7 @@ POST https://auth-server.com/token
   client_id=123&
   client_secret=SECRET
 
-
-#### test edilmesi gerekebilir
-- signup 403 (uzak masaüstüne ssh ile girince sign up çalışmıyor)
-- game 400 (localde çalışıyor aynı ağdaki cihaz girdiğinde çalışmıyor 400 veriyor)
+Genellikle spa larda implict flow kullanılıyor ve bu nispeten basitleştirilmiş bir akış clienta direkt accsess token veriliyor
 
 
 ### Yapılacaklar
@@ -60,7 +57,7 @@ POST https://auth-server.com/token
       Therefore, users must have the ability to participate in a live Pong game against another player directly on the website. Both players will use the same keyboard. The Remote players module can enhance this functionality with remote players.
 - tournament:
       A player must be able to play against another player, but it should also be possible to propose a tournament. This tournament will consist of multiple players who can take turns playing against each other. You have flexibility in how you implement the tournament, but it must clearly display who is playing against whom and the order of the players. There must be a matchmaking system: the tournament system organize the matchmaking of the participants, and announce the next fight.
-- All players must adhere to the same rules, which includes having identical paddle speed.
+- All players must adhere to the same rules, which includes having identical paddle speed. ✅
 - Each user has a Match History including 1v1 games, dates, and relevant details, accessible to logged-in users.
 
 *** USER ***
@@ -71,7 +68,7 @@ POST https://auth-server.com/token
 
 *** Docker ***
 - If you have a backend or any other features, it is mandatory to enable an HTTPS connection for all aspects (Utilize wss instead of ws...).
-- For obvious security reasons, any credentials, API keys, env variables etc... must be saved locally in a .env file and ignored by git. Publicly stored credentials will lead you directly to a failure of the project.
+- For obvious security reasons, any credentials, API keys, env variables etc... must be saved locally in a .env file and ignored by git. Publicly stored credentials will lead you directly to a failure of the project. ✅
 
 
 
@@ -80,17 +77,14 @@ POST https://auth-server.com/token
 0.5	- bootstrap ✅
 0.5	- postgre ✅
 1	- user management
-> Users can view their online status.
+> Users can view their online status. ?
+> User profiles display stats, such as wins and losses. ? 
+> Each user has a Match History including 1v1 games, dates, and relevant details, accessible to logged-in users. ?
 
-> User profiles display stats, such as wins and losses.
-> Each user has a Match History including 1v1 games, dates, and relevant details, accessible to logged-in users.
-
-1	- 42 api
-> 20 ekimde tamamlamış olacağım inşallah by maygen
+1	- 42 api ✅
 1 - zombie game
 >
-1	- JWT 2FA
-> JWT tamamlandı, 2FA yapılacak
+1	- JWT 2FA ✅
 1	- microservice ✅
 1	- 3D ✅
 

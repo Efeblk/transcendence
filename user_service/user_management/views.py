@@ -1,19 +1,29 @@
 import json
-from .models import Users, Friendship
-from rest_framework import generics
-from django.shortcuts import render, get_object_or_404
+import os
+import secrets
+import requests
+import urllib.parse
+from .models import Users, Friendship, EmailVerificationCode
 from .serializers import UsersSerializer
-from django.http import JsonResponse
-from django.contrib.auth.hashers import make_password, check_password
-from django.contrib.auth import authenticate
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
+from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.db.models import Q
+from django.utils.crypto import get_random_string
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.core.signing import Signer
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse
+from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 
 class UsersViewSet(generics.ListCreateAPIView):
@@ -28,6 +38,22 @@ def login_view(request):
     
 def search_view(request):
     return render(request, 'user_service/search.html')
+
+def verify_2fa_view(request):
+    return render(request, 'user_service/enter_2fa_code.html')
+
+def send_2fa_code(user):
+    # Generate a random 6-digit code
+    code = get_random_string(length=6, allowed_chars='0123456789')
+    user.two_fa_code = code  # Store the code in the model
+    user.save()
+    
+    subject = 'Your 2FA Code'
+    message = f'Your one-time code is: {code}'
+    from_email = settings.DEFAULT_FROM_EMAIL
+
+    send_mail(subject, message, from_email, [user.user_email])
+
 
 def signup(request):
     if request.method == 'POST':
@@ -49,13 +75,13 @@ def signup(request):
             username=username,
             user_email=email,
             password=make_password(password),
-            user_level=1.0,
+            user_level=0.0,
             user_type='normal',
-            user_status='active'
+            user_status='offline'
         )
         user.save()
 
-        return JsonResponse({'success': True, 'message': 'User created successfully!'})
+        return JsonResponse({'success': True, 'message': 'User created successfully! Please check your email to verify your account.'})
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -65,7 +91,26 @@ def get_tokens_for_user(user):
     }
 
 @csrf_exempt
-def login(request):
+def check_2fa_code(request):
+    if request.method == 'POST':
+        body = json.loads(request.body)
+        username = body.get('username')
+        code_entered = body.get('code')  # Only get this if it's a 2FA step
+        try:
+            user = Users.objects.get(username=username)
+        except Users.DoesNotExist:
+            return JsonResponse({'message': 'Invalid username or password.'}, status=400)
+        if code_entered == user.two_fa_code:
+            tokens = get_tokens_for_user(user)
+            user.user_status = "online"
+            user.save()
+            return JsonResponse({'success': True, 'message': 'Login successful', 'access_token': tokens['access'], 'refresh_token': tokens['refresh']}, status=200)
+        else:
+            return JsonResponse({'message': 'Invalid 2FA code.'}, status=400)
+
+
+@csrf_exempt
+def login_(request):
     if request.method == 'POST':
         body = json.loads(request.body)
         username = body.get('username')
@@ -75,15 +120,15 @@ def login(request):
             user = Users.objects.get(username=username)
         except Users.DoesNotExist:
             return JsonResponse({'message': 'Invalid username or password.'}, status=400)
-
-        # Check the password
+        
+        # First login step
         if check_password(password, user.password):
-            tokens = get_tokens_for_user(user)
-            return JsonResponse({'success': True, 'message': 'Login successful', 'access_token': tokens['access'], 'refresh_token': tokens['refresh']}, status=200)
-        else:
-            return JsonResponse({'message': 'Invalid username or password.'}, status=400)
-
-
+            send_2fa_code(user)  # Send the 2FA code
+            return JsonResponse({'success': True, 'message': '2FA code sent to email. Enter the code to continue.'}, status=200)
+        
+        return JsonResponse({'message': 'Invalid username or password.'}, status=400)
+    
+    return JsonResponse({'message': 'Invalid request method.'}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -103,6 +148,17 @@ def profile_view(request):
         'requests': pending_requests_count,
     }
     return Response(context, template_name='user_service/profile.html')
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@renderer_classes([TemplateHTMLRenderer])
+def edit_profile_view(request):
+    context = {
+        'user': request.user,
+    }
+    return Response(context, template_name='user_service/edit_profile.html')
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -219,4 +275,167 @@ def decline_friend_request(request, friend_id):
         return Response({'message': 'Friend request declined'}, status=201)
     except Friendship.DoesNotExist:
         return Response({'error': 'Friend request not found'}, status=404)
+
+# unfirend a friend
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def unfriend_friend(request, friend_id):
+    try:
+        # Try to get the friendship from the request user's perspective
+        friendship = Friendship.objects.get(user=request.user, friend=friend_id, status='accepted')
+        friendship.delete()
+        return Response({'message': 'Friend is unfriended.'}, status=200)
+    except Friendship.DoesNotExist:
+        # If not found, try from the friend's perspective
+        try:
+            friendship = Friendship.objects.get(user=friend_id, friend=request.user, status='accepted')
+            friendship.delete()
+            return Response({'message': 'Friend is unfriended.'}, status=200)
+        except Friendship.DoesNotExist:
+            return Response({'error': 'Friendship not found.'}, status=404)
+
+
+@csrf_exempt
+def fortytwo_login(request):
+    state = secrets.token_urlsafe(32)
+    request.session['oauth_state'] = state
+
+    params = {
+        'client_id': settings.FORTYTWO_CLIENT_ID,
+        'redirect_uri': settings.FORTYTWO_REDIRECT_URI,
+        'response_type': 'code',
+        'state': state,
+        'scope': 'public'
+    }
+
+    auth_url = f"{settings.FORTYTWO_AUTH_URL}?{urllib.parse.urlencode(params)}"
+    return JsonResponse({'auth_url': auth_url})
+
+def fortytwo_callback(request):
+    code = request.GET.get('code')
+    state = request.GET.get('state')
+    
+    # Verify state to prevent CSRF
+    if state != request.session.get('oauth_state'):
+        return JsonResponse({'error': 'Invalid state parameter'}, status=400)
+    
+    # Exchange code for access token
+    token_response = requests.post(settings.FORTYTWO_TOKEN_URL, data={
+        'client_id': settings.FORTYTWO_CLIENT_ID,
+        'client_secret': settings.FORTYTWO_CLIENT_SECRET,
+        'code': code,
+        'redirect_uri': settings.FORTYTWO_REDIRECT_URI,
+        'grant_type': 'authorization_code'
+    })
+    
+    if not token_response.ok:
+        return JsonResponse({'error': 'Failed to obtain access token'}, status=400)
+    
+    access_token = token_response.json()['access_token']
+    
+    # Get user info from 42 API
+    user_response = requests.get(settings.FORTYTWO_USER_URL, headers={
+        'Authorization': f'Bearer {access_token}'
+    })
+    
+    if not user_response.ok:
+        return JsonResponse({'error': 'Failed to get user info'}, status=400)
+    
+    user_data = user_response.json()
+    cursus_users = user_data.get('cursus_users', [])
+    if len(cursus_users) >= 2:
+        s = cursus_users[1]
+    else:
+        s = cursus_users[0]
+    campus = user_data.get('campus', [])
+    c = campus[0]
+
+    Users.objects.get_or_create(
+        id=user_data['id'],  # 42 API'den alınan benzersiz kullanıcı kimliği
+        defaults={
+            'username': user_data['login'],
+            'user_name': user_data['displayname'],
+            'first_name' : user_data['first_name'],
+            'last_name' : user_data['last_name'],
+            'email': user_data.get('email', ''),
+            'user_email': user_data.get('email', ''),
+            'user_level': s.get('level'),
+            'user_grade': s.get('grade'),
+            'user_skillsjson' : s.get('skills'),
+            'user_location' : c.get('name'),
+            'user_wallet' : user_data.get('wallet'),
+            'user_imagejson' : user_data.get('image'),
+            'user_phone' : user_data.get('phone'),
+            'user_created_on': user_data.get('created_at', ''),
+            'user_updated_on': user_data.get('updated_at', ''),
+            'user_type': 'normal',  # Varsayılan olarak 'standard' tip
+            'user_status': 'active',  # Varsayılan olarak 'active' durum
+        }
+    )
+
+    return redirect(f"/#/login-success?username={user_data['login']}")
+
+@csrf_exempt
+def login42(request):
+    if request.method == 'POST':
+        state = secrets.token_urlsafe(32)
+        request.session['oauth_state'] = state
+
+        try:
+            body = json.loads(request.body)
+            username = body.get('username')
+
+            if not username:
+                return JsonResponse({'message': 'Username is required.'}, status=400)
+
+            user = Users.objects.get(username=username)
+            tokens = get_tokens_for_user(user)
+            return JsonResponse({
+                'success': True,
+                'message': 'Login successful',
+                'access_token': tokens['access'],
+                'refresh_token': tokens['refresh'],
+            }, status=200)
+        except Users.DoesNotExist:
+            return JsonResponse({'message': 'Invalid username.'}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'message': 'Invalid JSON data.'}, status=400)
+    else:
+        return JsonResponse({'message': 'Invalid request method.'}, status=405)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def edit_profile(request):
+    user = request.user
+    data = request.data
+
+    user.username = data.get('username', user.username)
+    user.user_email = data.get('user_email', user.user_email)
+    if 'profile_picture' in request.FILES:
+        profile_picture = request.FILES['profile_picture']
+        if profile_picture.size > 2 * 1024 * 1024:  # 2MB in bytes
+            return Response({'error': 'File size must be less than 2MB.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Delete the old profile picture if it's not the default
+        if user.profile_picture.name != 'profile_pictures/default.jpg':
+            old_picture_path = os.path.join(settings.MEDIA_ROOT, user.profile_picture.name)
+            if os.path.isfile(old_picture_path):
+                os.remove(old_picture_path)
+
+        user.profile_picture = profile_picture
+    
+    user.save()
+
+    return Response({'message': 'Profile updated successfully'}, status=200)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    try:
+        request.user.user_status = "offline"
+        request.user.save()
+        return Response({'message': 'You logged out.'}, status=200)
+    except Friendship.DoesNotExist:
+        return Response({'error': 'You could not log out'}, status=500)
 

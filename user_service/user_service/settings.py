@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,13 +21,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9a40&=$$jts4c2&$m^(2pxjj$e14w@@0$obp1f*$6l7n-w91q6'
+SECRET_KEY = os.getenv('SECRET_KEY_USER')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
+# ! bu cacheleri tutmasını engellemek için var
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
+# 42 login için
+FORTYTWO_CLIENT_ID = os.getenv('FORTYTWO_CLIENT_ID')
+FORTYTWO_CLIENT_SECRET = os.getenv('FORTYTWO_CLIENT_SECRET')
+FORTYTWO_REDIRECT_URI = 'http://localhost/api/auth/42/callback'
+FORTYTWO_AUTH_URL = 'https://api.intra.42.fr/oauth/authorize'
+FORTYTWO_TOKEN_URL = 'https://api.intra.42.fr/oauth/token'
+FORTYTWO_USER_URL = 'https://api.intra.42.fr/v2/me'
 
 # Application definition
 
@@ -40,6 +55,9 @@ INSTALLED_APPS = [
     'user_management',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'two_factor',
 ]
 
 REST_FRAMEWORK = {
@@ -76,6 +94,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_otp.middleware.OTPMiddleware',
 ]
 
 ROOT_URLCONF = 'user_service.urls'
@@ -98,23 +117,28 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'user_service.wsgi.application'
 
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',  # Default
+    'django_otp.backends.OTPBackend',            # OTP backend
+)
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'transcendence.2fa.mail@gmail.com'
+EMAIL_HOST_PASSWORD= os.getenv('EMAIL_HOST_PASSWORD')
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'user_db',
-        'USER': 'postgres_user',
-        'PASSWORD': 'postgres_password',
+        'NAME': os.getenv('USER_POSTGRESQL_DB_NAME'),
+        'USER': os.getenv('USER_POSTGRESQL_USER'),
+        'PASSWORD': os.getenv('USER_POSTGRESQL_PASS'),
         'HOST': 'user_db',  # The service name from docker-compose
         'PORT': '5432',
     }
@@ -155,6 +179,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+# ! burayı staticdeki js leri yükleyemediğim için gereksiz buldum
+# ! STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# ! STATICFILES_DIRS = [
+# !    BASE_DIR / "user_management/static",
+# ! ]
+
 LOGIN_URL = '/login/'  # Define where unauthenticated users should be redirected to
 
 # Default primary key field type

@@ -65,8 +65,7 @@ function router() {
             .catch(error => {
                 console.error('Error loading page:', error);
             });
-    }
-    else if (path === '/login') {
+    }else if (path === '/login') {
         const token = localStorage.getItem('access_token');
         if (token)
             window.location.href = '/profile';
@@ -101,12 +100,11 @@ function router() {
                         const data = await response.json();
     
                         if (data.success) {
-                            localStorage.setItem('access_token', data.access_token);
-                            alert('Login successful!');
-                            window.location.href = '/profile';
+                            //localStorage.setItem('access_token', data.access_token);
+                            alert('2FA code sent to email. Enter the code to continue.');
+                            window.location.href = `/verify-2fa?username=${encodeURIComponent(username)}`;
                         } else {
-                            const errorMessage = document.getElementById('error-message');
-                            errorMessage.textContent = data.message;
+                            alert(data.message);
                         }
                     });
                 
@@ -116,7 +114,7 @@ function router() {
                     }); 
                 }).catch(error => { 
                     console.error('Error loading login page:', error); 
-                });    
+                });
         }
     } else if (path === '/signup') {
         fetch('/api/users/signup')
@@ -160,6 +158,52 @@ function router() {
         }).catch(error => {
             console.error('Error loading sign-up page:', error);
         });
+    }else if (path === '/verify-2fa'){
+        const token = localStorage.getItem('access_token');
+        if (token)
+            window.location.href = '/profile';
+        else
+        {
+            const username = new URLSearchParams(window.location.search).get('username');
+
+            fetch(`/api/users/verify-2fa/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load verification page');
+                }
+                return response.text();
+            })
+            .then(htmlContent => {
+                app.innerHTML = htmlContent;
+        
+                // Handle form submission
+                const verificationForm = document.getElementById('verification-form');
+                verificationForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+        
+                    const code = document.getElementById('code').value; // Get the code
+                    const response = await fetch('/api/users/rq_verify-2fa/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ username, code }),
+                    });
+                    const data = await response.json();
+    
+                    if (data.success) {
+                        localStorage.setItem('access_token', data.access_token); // Store the access token
+                        window.location.href = '/profile'; // Redirect to profile after successful login
+                    } else {
+                        messageDiv.textContent = data.message;
+                        messageDiv.style.color = 'red';
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching the verification page:', error);
+            });
+        }
     }else if (path === '/profile'){
         const token = localStorage.getItem('access_token');
         if (!token)
@@ -186,9 +230,88 @@ function router() {
                     app.innerHTML = htmlContent;
 
                     const LogOut = document.getElementById('LogOut');
-                    LogOut.addEventListener('click', function() {
-                        logout();
+                    LogOut.addEventListener('click', async function(event) {
+                        event.preventDefault(); // Prevent form submission
+                        
+                        try {
+                            const response = await fetch('/api/users/logout/', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                }
+                            });
+                    
+                            // Handle different response statuses
+                            if (response.status === 200) {
+                                // Successful logout with no content
+                                localStorage.removeItem('access_token');  // Remove the token
+                                window.location.href = '/login';  // Redirect to login page
+                            } else {
+                                const data = await response.json(); // Parse JSON only if not 204
+                                alert(data.message || 'An error occurred during logout.');
+                            }
+                        } catch (error) {
+                            console.error('Error during logout:', error);
+                            alert('An error occurred during logout. Please try again.');
+                        }
+                    });
+
+                    const Edit = document.getElementById('Edit');
+                    Edit.addEventListener('click', function() {
+                        window.location.href = '/edit_profile';
                     }); 
+                })
+                .catch(error => {
+                    console.error('Error loading profile:', error);
+                });
+        }
+    } else if (path === '/edit_profile'){
+        const token = localStorage.getItem('access_token');
+        if (!token)
+            window.location.href = '/login';
+        else
+        {
+            fetch('/api/users/edit_profile', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}` // Include the token here
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load profile');
+                    }
+                    return response.text();  // Return HTML content
+                })
+                .then(htmlContent => {
+                    app.innerHTML = htmlContent;
+                    document.getElementById('edit-profile-form').addEventListener('submit', function(event) {
+                        event.preventDefault(); // Prevent the default form submission
+                
+                        const formData = new FormData(this);
+
+                        fetch('/api/users/rq_edit_profile', {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                            },
+                            body: formData
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Failed to update profile');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            alert(data.message); // Show success message
+                            window.location.href = '/profile';
+                        })
+                        .catch(error => {
+                            console.error('Error updating profile:', error);
+                        });
+                    });
+
                 })
                 .catch(error => {
                     console.error('Error loading profile:', error);
@@ -306,6 +429,7 @@ function router() {
 
                     const acceptButtons = document.querySelectorAll('.accept-btn');
                     const declineButtons = document.querySelectorAll('.decline-btn');
+                    const unfriendButtons = document.querySelectorAll('.unfriend-btn');
                     
                     acceptButtons.forEach(button => {
                         button.addEventListener('click', function() {
@@ -318,6 +442,13 @@ function router() {
                         button.addEventListener('click', function() {
                             const friendId = this.getAttribute('data-id');
                             handleFriendRequest(friendId, 'decline');
+                        });
+                    });
+
+                    unfriendButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const friendId = this.getAttribute('data-id');
+                            handleFriendRequest(friendId, 'unfriend');
                         });
                     });
 
@@ -418,14 +549,14 @@ window.addEventListener('load', function () {
 // Handle browser back/forward buttons
 window.addEventListener('popstate', router);
 
-function logout() {
-    localStorage.removeItem('access_token');  // Remove the token
-    window.location.href = '/login';  // Redirect to login page
-}
-
 function handleFriendRequest(friendId, action) {
     const token = localStorage.getItem('access_token');
-    const url = action === 'accept' ? `/api/users/friendships/accept/${friendId}/` : `/api/users/friendships/decline/${friendId}/`;
+    url = `/api/users/friendships/unfriend/${friendId}/`;
+    if (action === 'accept'){
+        url = `/api/users/friendships/accept/${friendId}/`;
+    }else if (action === 'decline'){
+        url = `/api/users/friendships/decline/${friendId}/`;
+    }
     
     fetch(url, {
         method: 'POST',
@@ -448,4 +579,89 @@ function handleFriendRequest(friendId, action) {
     .catch(error => {
         console.error('Error handling friend request:', error);
     });
+}
+
+
+
+
+// ! maygen
+const initiate42Login = async () => {
+    try {
+        // İsteği at
+        const response = await fetch('/api/auth/42/login/');
+        console.log('Response type:', response.headers.get('content-type'));
+        
+        // Response içeriğini kontrol et
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // JSON'a çevir
+        console.log('Received data:?');
+        const data = await response.json();
+        console.log('Received data:', data);
+        
+        // auth_url var mı kontrol et
+        if (!data.auth_url) {
+            throw new Error('No auth_url in response');
+        }
+        
+        // 42'ye yönlendir
+        window.location.href = data.auth_url;
+        
+    } catch (error) {
+        // console.error('Login error:', error);
+        alert('Login failed: ' + error.message);
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    handleLoginSuccess();
+  });
+
+function getQueryParameterFromHash(param) {
+    // Hash kısmını alalım
+    const hash = window.location.hash;
+
+    // Hash kısmından '?' ve sonrası varsa alalım
+    const queryStringIndex = hash.indexOf('?');
+    if (queryStringIndex === -1) {
+        return null;
+    }
+
+    // Query string'i alalım ve URLSearchParams kullanarak parametreleri işleyelim
+    const queryString = hash.substring(queryStringIndex + 1);
+    const urlParams = new URLSearchParams(queryString);
+
+    // İstenen parametreyi alalım
+    return urlParams.get(param);
+}
+
+async function handleLoginSuccess() {
+    if (window.location.hash.startsWith('#/login-success')) {
+        console.log("handle login function working....");
+        
+        const username = getQueryParameterFromHash('username');
+        console.log(username);
+
+
+        const response = await fetch('/api/users/login42/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username })
+        });
+
+        const data = await response.json();
+    
+        if (data.success) {
+            localStorage.setItem('access_token', data.access_token);
+            alert('Login successful!');
+            window.location.href = '/profile';
+        } else {
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.textContent = data.message;
+        }
+    }
 }

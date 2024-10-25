@@ -1,8 +1,20 @@
 <h1>User Profile</h1>
-<img src="{{user.profile_picture.url}}" alt="Profile Picture" style="width: 200px; height: 150px;">
+<img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="img-fluid rounded-circle" style="width: 200px; height: 200px;">
 <p>Username: {{user.username}}</p>
+<p>{{user.user_status}}</p>
 <p>Email: {{user.user_email}}</p>
+<p>Location: {{user.user_location}}</p>
+<p>Wallet: {{user.user_wallet}}</p>
 <p>Level: {{user.user_level}}</p>
+<p>Grade: {{user.user_grade}}</p>
+<p>user_created_on: {{user.user_created_on}}</p>
+<p>user_updated_on: {{user.user_updated_on}}</p>
+<h5>Skills</h5>
+<ul>
+    {% for skill in user.user_skillsjson %}
+        <li>{{ skill.name }} - Level: {{ skill.level }}</li>
+    {% endfor %}
+</ul>
 <p>
     <a href="/friends" class="user-profile-link">
         Friends: {{friends}}
@@ -14,3 +26,89 @@
     </a>
 </p>
 <button id="LogOut" class="btn btn-secondary">LogOut</button>
+<button id="Edit" class="btn btn-secondary">Edit</button>
+
+
+{% comment %} <div class="container my-5">
+    <div class="card">
+        <div class="card-header text-center">
+            <h1>User Profile</h1>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-4 text-center">
+                    <img src="{{ user.user_imagejson.versions.large }}" alt="Large Profile Picture" class="img-fluid rounded-circle">
+                </div>
+                <div class="col-md-8">
+                    <h4>{{user.displayname}}</h4>
+                    <p><strong>Username:</strong> {{user.username}}</p>
+                    <p><strong>Email:</strong> {{user.user_email}}</p>
+                    <p><strong>Location:</strong> {{user.user_location}}</p>
+                    <p><strong>Wallet:</strong> {{user.user_wallet}}</p>
+                    <p><strong>Level:</strong> {{user.user_level}}</p>
+                    <p><strong>Grade:</strong> {{user.user_grade}}</p>
+                    <p><strong>Account Created On:</strong> {{user.user_created_on}}</p>
+                    <p><strong>Last Updated On:</strong> {{user.user_updated_on}}</p>
+                </div>
+            </div>
+            <div class="mb-4">
+                <h5>Skills</h5>
+                <ul class="list-group">
+                    {% for skill in user.user_skillsjson %}
+                    <li class="list-group-item">{{ skill.name }} - Level: {{ skill.level }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="mb-4">
+                <a href="/friends" class="btn btn-primary mr-2">Friends: {{friends}}</a>
+                <a href="/friend_requests" class="btn btn-info">Friendship Requests: {{requests}}</a>
+            </div>
+            <button id="LogOut" class="btn btn-danger">Log Out</button>
+        </div>
+    </div>
+</div> {% endcomment %}
+
+
+<div class="container my-5">
+    <div class="card">
+        <div class="card-header text-center">
+            <h1>User Profile</h1>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-4 text-center">
+                    <img src="{{ user.user_imagejson.versions.large }}" alt="Large Profile Picture" class="img-fluid rounded-circle">
+                </div>
+                <div class="col-md-8">
+                    <h4>{{user.displayname}}</h4>
+                    <p><strong>Username:</strong> {{user.username}}</p>
+                    <p><strong>Email:</strong> {{user.user_email}}</p>
+                    <p><strong>Location:</strong> {{user.user_location}}</p>
+                    <p><strong>Wallet:</strong> {{user.user_wallet}}</p>
+                    <p><strong>Level:</strong> {{user.user_level}}</p>
+                    <p><strong>Grade:</strong> {{user.user_grade}}</p>
+                    <p><strong>Account Created On:</strong> {{user.user_created_on}}</p>
+                    <p><strong>Last Updated On:</strong> {{user.user_updated_on}}</p>
+                </div>
+            </div>
+            <div class="mb-4">
+                <h5>Skills</h5>
+                <ul class="list-group">
+                    {% for skill in user.user_skillsjson %}
+                        <li class="list-group-item">{{ skill.name }} - Level: {{ skill.level }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="mb-4">
+                <a href="/friends" class="btn btn-primary mr-2">Friends: {{friends}}</a>
+                <a href="/friend_requests" class="btn btn-info">Friendship Requests: {{requests}}</a>
+            </div>
+            <button id="LogOut" class="btn btn-danger">Log Out</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
