@@ -79,6 +79,20 @@ class Game {
         document.removeEventListener('keyup', (event) => this.opponent.handleKeyUp(event));
     }
 
+    removeOpponent() {
+        if (this.opponent) {
+            // Remove the paddle mesh from the scene
+            this.scene.remove(this.opponent.getPaddle().mesh);
+
+            // Dispose of the geometry and material to free resources
+            this.opponent.getPaddle().mesh.geometry.dispose();
+            this.opponent.getPaddle().mesh.material.dispose();
+
+            // Set opponent to null
+            this.opponent = null;
+        }
+    }
+
     animate() {
         if (!this.isRunning) return;
 
@@ -150,16 +164,14 @@ class Game {
             console.log('Game is already running!');
             return;
         }
-
+        this.removeOpponent();
         // Setup opponent based on the selected mode
         if (mode === 'player') {
             console.log('Starting Player vs Player mode...');
-            this.opponent = null;
             this.opponent = new Player(this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai, 'player2');
             this.setupControlsOpponent();
         } else {
             console.log('Playing against AI...');
-            this.opponent = null;
             this.opponent = new AIpaddle(this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai);
             // Set AI difficulty
             if (['easy', 'medium', 'hard'].includes(mode)) {
