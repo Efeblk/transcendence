@@ -49,8 +49,16 @@ function router() {
         }, 100);
 
     } else if (path === '/pingpong') {
-        // Fetch and load game page
-        fetch('/api/game/pingpong/pingpong')
+        token = localStorage.getItem('access_token');
+        if (!token)
+        {
+            window.location.href = '/login';
+            alert("Önce giriş yapmalısınız");
+        }
+        else
+        {
+                        // Fetch and load game page
+            fetch('/api/game/pingpong/pingpong')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to load game page');
@@ -59,13 +67,15 @@ function router() {
             })
             .then(htmlContent => {
                 app.innerHTML = htmlContent;
-
+        
                 // Dynamically load the game controller script after loading the HTML
                 pageStartScript(path, 'gameContainer');  // Target the game container specifically
             })
             .catch(error => {
                 console.error('Error loading page:', error);
             });
+        }
+
     }else if (path === '/zombie_game') { 
         fetch('/api/game/zombie_game/zombie_game')
             .then(response => {
