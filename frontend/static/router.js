@@ -50,6 +50,7 @@ function router() {
 
     } else if (path === '/pingpong') {
         token = localStorage.getItem('access_token');
+        console.log("token inside ", token);
         if (!token)
         {
             window.location.href = '/login';

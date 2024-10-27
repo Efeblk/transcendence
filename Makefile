@@ -14,6 +14,7 @@ clean:
 
 # docker volume rm $$(docker volume ls -q);\
 # rm -rf game_service/staticfiles
+# rm -rf game_service/pingpong/migrations
 # docker rmi -f $$(docker images -qa);\
 
 .PHONY: all re down clean

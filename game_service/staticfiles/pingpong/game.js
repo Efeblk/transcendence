@@ -149,6 +149,7 @@ class Game {
             .catch(error => console.error('Error saving game result:', error));
 
         this.gameUI.showRestartButton(); // Show the restart button at the end of the game
+        
     }
 
     reset() {
