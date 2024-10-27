@@ -25,24 +25,32 @@ class Game {
         } else {
             console.error('Game container not found');
         }
+        this.api = new GameAPI();
 
         this.table = new Table(this.scene, texturePath);
-        this.player = new Player(this.scene, gameConfig.paddle.positionZ.player, gameConfig.paddle.color.player);
+        this.initPlayer();
         this.opponent = null; // Placeholder for opponent (AI or Player 2)
         this.ball = new Ball(this.scene);
 
         this.setupLights();
-        this.setupControls();
 
         this.playerScore = 0;
         this.aiScore = 0;
         this.maxScore = 3;
         this.isRunning = false; // Game starts as not running
 
-        this.api = new GameAPI();
-
         // Initialize GameUI with start and reset callbacks
         this.gameUI = new GameUI(this.start.bind(this), this.reset.bind(this));
+    }
+
+    async initPlayer() {
+        try {
+            const player = await this.api.getCurrentPlayer();
+            this.player = new Player(player, this.scene, gameConfig.paddle.positionZ.player, gameConfig.paddle.color.player);
+            this.setupControls();
+        } catch (error) {
+            console.error('Error initializing player:', error);
+        }
     }
 
     setupLights() {
@@ -142,9 +150,9 @@ class Game {
 
     endGame() {
         this.isRunning = false;
-        const winner = this.playerScore > this.aiScore ? "Player" : "Opponent";
+        const winner = this.playerScore > this.aiScore ? this.player.getName() : "Opponent";
 
-        this.api.saveGameData('Player 1', this.aiScore, this.playerScore, winner)
+        this.api.saveGameData(this.player.getName(), this.aiScore, this.playerScore, winner)
             .then(data => console.log('Game result saved:', data))
             .catch(error => console.error('Error saving game result:', error));
 
@@ -169,11 +177,11 @@ class Game {
         // Setup opponent based on the selected mode
         if (mode === 'player') {
             console.log('Starting Player vs Player mode...');
-            this.opponent = new Player(this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai, 'player2');
+            this.opponent = new Player('opponent', this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai, 'player2');
             this.setupControlsOpponent();
         } else {
             console.log('Playing against AI...');
-            this.opponent = new AIpaddle(this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai);
+            this.opponent = new AIpaddle('AI', this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai);
             // Set AI difficulty
             if (['easy', 'medium', 'hard'].includes(mode)) {
                 this.opponent.setDifficulty(mode);

@@ -12,7 +12,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('users-data/', UsersViewSet.as_view(), name='users-data-list'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('users-data/', getuser, name='getuser'),
+    path('getuser/', getuser, name='getuser'),
     path('rq_login/', login_, name='rq_login'),
     path('login42/', login42, name='login42'),
     path('login/', login_view, name='login'),

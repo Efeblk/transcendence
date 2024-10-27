@@ -1,5 +1,6 @@
 class Player {
-    constructor(scene, zPosition, color, player = 'player1') {
+    constructor(name, scene, zPosition, color, player = 'player1') {
+        this.name = name;
         this.paddle = new Paddle(scene, zPosition, color);
         this.moveLeftActive = false;
         this.moveRightActive = false;
@@ -41,6 +42,9 @@ class Player {
 
     getPaddle() {
         return this.paddle;
+    }
+    getName() {
+        return this.name;
     }
 
     hitBall(ball) {
