@@ -116,6 +116,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'user_service.wsgi.application'
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1', 'http://localhost', 'https://192.168.221.131', 'https://example.com']
+
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',  # Default

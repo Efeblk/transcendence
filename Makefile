@@ -1,11 +1,11 @@
 all:
-	@docker compose -f docker-compose.yml up
+	@docker-compose -f docker-compose.yml up
 
 down:
-	@docker compose -f docker-compose.yml down
+	@docker-compose -f docker-compose.yml down
 
 re:
-	@docker compose -f docker-compose.yml up --build
+	@docker-compose -f docker-compose.yml up --build
 
 clean:
 	@docker stop $$(docker ps -qa);\

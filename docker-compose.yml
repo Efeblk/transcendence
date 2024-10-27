@@ -81,6 +81,7 @@ services:
       context: .  # Make sure this context is set correctly where your nginx.conf is located
       dockerfile: ./nginx/Dockerfile
     ports:
+      - "443:443"
       - "80:80"
     depends_on:
       - game_service
