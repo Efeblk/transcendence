@@ -28,7 +28,26 @@ function router() {
 
     if (path === '/') {
         // Home page content
-        app.innerHTML = '<h1>Welcome to Transcendence</h1><p>This is the initial home page content.</p>';
+        // app.innerHTML = '<h1>Welcome to Transcendence</h1><p>This is the initial home page content.</p>';
+        app.innerHTML = `
+            <div class="welcome-container d-flex align-items-center justify-content-center">
+                <div class="floating-shapes"></div>
+                <div class="text-center text-white">
+                    <h1 class="welcome-text display-1 fw-bold mb-4">Welcome to Transcendence</h1>
+                    <p class="welcome-text lead mb-5">Experience the ultimate gaming platform</p>
+                    <button class="btn-enter btn btn-light btn-lg px-5 py-3" onclick="window.location.href='/pingpong'">
+                        Play Pingpong
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Ana sayfa animasyonlarını başlat
+        setTimeout(() => {
+            createFloatingShapes();
+            showElements();
+        }, 100);
+
     } else if (path === '/pingpong') {
         // Fetch and load game page
         fetch('/api/game/pingpong/pingpong')
@@ -207,7 +226,10 @@ function router() {
     }else if (path === '/profile'){
         const token = localStorage.getItem('access_token');
         if (!token)
+        {
             window.location.href = '/login';
+            alert("Önce giriş yapmalısınız");
+        }
         else
         {
             fetch('/api/users/profile', {
@@ -320,7 +342,10 @@ function router() {
     } else if (path === '/search') {
         const token = localStorage.getItem('access_token');
         if (!token)
+        {
             window.location.href = '/login';
+            alert("Önce giriş yapmalısınız");
+        }
         else
         {
             fetch('/api/users/search')
@@ -339,7 +364,10 @@ function router() {
                         event.preventDefault();  // Prevent default form submission
         
                         let query = document.getElementById('searchInput').value.trim();  // Get search query and trim spaces
-                
+                        if (query === '') {
+                            alert('Lütfen bir arama terimi girin!');
+                            return;  // Stop form submission if the input is empty
+                        }
                         fetch(`/api/users/rq_search/?q=${encodeURIComponent(query)}`, {
                             method: 'GET',
                             headers: {
@@ -371,6 +399,7 @@ function router() {
 
             if (!token) {
                 window.location.href = '/login';  // Redirect to login if no token
+                alert("Önce giriş yapmalısınız");
             } else {
                 fetch(`/api/users/profile/${username}`, {  // Use the username in the API call
                     method: 'GET',
@@ -460,7 +489,10 @@ function router() {
     }else if (path === '/friend_requests') {
         const token = localStorage.getItem('access_token');
         if (!token)
+        {
             window.location.href = '/login';
+            alert("Önce giriş yapmalısınız");
+        }
         else {
             fetch('/api/users/friend_requests/', {
                 method: 'GET',
@@ -497,7 +529,10 @@ function router() {
     }else if (path === '/friends') {
         const token = localStorage.getItem('access_token');
         if (!token)
+        {
             window.location.href = '/login';
+            alert("Önce giriş yapmalısınız");
+        }
         else {
             fetch('/api/users/friends/', {
                 method: 'GET',
@@ -665,3 +700,43 @@ async function handleLoginSuccess() {
         }
     }
 }
+
+
+// !anasayfa animasyonu
+        // Floating shapes oluşturma
+function createFloatingShapes() {
+    const shapes = document.querySelector('.floating-shapes');
+    const numberOfShapes = 15;
+
+    for (let i = 0; i < numberOfShapes; i++) {
+        const shape = document.createElement('div');
+        const size = Math.random() * 50 + 20;
+        shape.style.width = `${size}px`;
+        shape.style.height = `${size}px`;
+        shape.style.left = `${Math.random() * 100}%`;
+        shape.style.animationDelay = `${Math.random() * 5}s`;
+        
+        shapes.appendChild(shape);
+    }
+}
+
+// Elementleri görünür yapma
+function showElements() {
+    const elements = document.querySelectorAll('.welcome-text, .btn-enter');
+    elements.forEach((el, index) => {
+        setTimeout(() => {
+            el.classList.add('visible');
+        }, index * 300);
+    });
+}
+
+// Sayfa yüklendiğinde
+document.addEventListener('DOMContentLoaded', () => {
+    createFloatingShapes();
+    showElements();
+});
+
+ // Butona tıklandığında
+document.querySelector('.btn-enter').addEventListener('click', () => {
+    alert('Hoş geldiniz! Ana sayfaya yönlendiriliyorsunuz...');
+});
