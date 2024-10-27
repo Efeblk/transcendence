@@ -1,4 +1,4 @@
-<h1>User Profile</h1>
+{% comment %} <h1>User Profile</h1>
 <img src="{{profile_user.profile_picture.url}}" alt="Profile Picture" style="width: 200px; height: 150px;">
 <p>Username: {{profile_user.username}}</p>
 <p>{{profile_user.user_status}}</p>
@@ -14,4 +14,65 @@
     <button class="decline-btn" data-id="{{ profile_user.id }}">Decline</button>
 {% elif action == 'accepted' %}
     <button class="unfriend-btn" data-id="{{ profile_user.id }}">Unfriend</button>
-{% endif %}
+{% endif %} {% endcomment %}
+
+
+<div class="container mt-4">
+    <h1 class="mb-4">User Profile</h1>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="d-flex">
+                <!-- Profile Picture on the Left -->
+                <div class="me-4">
+                    <img 
+                        src="{{ profile_user.profile_picture.url }}" 
+                        alt="Profile Picture" 
+                        class="img-fluid mb-3" 
+                        style="width: 200px; height: 200px;"
+                    >
+                    <!-- Action Buttons Below the Picture -->
+                    <div class="text-center">
+                        {% if action == 'add_friend' %}
+                            {% if profile_user.username != user.username %}
+                                <button id="AddFriend" class="btn btn-secondary mt-2">Add Friend</button>
+                            {% endif %}
+                        {% elif action == 'pending' %}
+                            <button class="btn btn-success me-2 accept-btn mt-2" data-id="{{ profile_user.id }}">Accept</button>
+                            <button class="btn btn-danger decline-btn mt-2" data-id="{{ profile_user.id }}">Decline</button>
+                        {% elif action == 'accepted' %}
+                            <button class="btn btn-warning unfriend-btn mt-2" data-id="{{ profile_user.id }}">Unfriend</button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- User Details on the Right -->
+                <div>
+                    <p class="card-text mb-2"><strong>Username:</strong> {{ profile_user.username }}</p>
+                    <p class="card-text mb-2"><strong>Status:</strong> {{ profile_user.user_status }}</p>
+                    <p class="card-text mb-2"><strong>Email:</strong> {{ profile_user.user_email }}</p>
+                    <p class="card-text mb-2"><strong>Location:</strong> {{ profile_user.user_location }}</p>
+                    <p class="card-text mb-2"><strong>Wallet:</strong> {{ profile_user.user_wallet }}</p>
+                    <p class="card-text mb-2"><strong>Level:</strong> {{ profile_user.user_level }}</p>
+                    <p class="card-text mb-2"><strong>Grade:</strong> {{ profile_user.user_grade }}</p>
+                    <p class="card-text mb-2"><strong>Created On:</strong> {{ profile_user.user_created_on }}</p>
+                    <p class="card-text"><strong>Last Updated:</strong> {{ profile_user.user_updated_on }}</p>
+                </div>
+            </div>
+
+            <!-- Skills Section -->
+            {% if profile_user.user_skillsjson and profile_user.user_skillsjson|length > 0 %}
+            <div class="mt-4">
+                <h5 class="card-title">Skills</h5>
+                <ul class="list-group list-group-flush">
+                    {% for skill in profile_user.user_skillsjson %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ skill.name }}
+                            <span class="badge bg-primary rounded-pill">Level: {{ skill.level }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

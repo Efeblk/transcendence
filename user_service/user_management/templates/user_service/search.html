@@ -1,4 +1,22 @@
-<form id="searchForm">
+{% comment %} BEFORE {% endcomment %}
+{% comment %} <form id="searchForm">
     <input type="search" name="q" value="{{ query }}" placeholder="Search for people..." id="searchInput">
     <button type="submit">Search</button>
-</form>
+</form> {% endcomment %}
+
+
+<!-- AFTER -->
+ <br>
+<form id="searchForm" class="d-flex align-items-center mb-3">
+    <input
+      type="search"
+      class="form-control me-2"
+      name="q"
+      value="{{ query }}"
+      placeholder="Search for people..."
+      id="searchInput"
+      aria-label="Search"
+    >
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+  

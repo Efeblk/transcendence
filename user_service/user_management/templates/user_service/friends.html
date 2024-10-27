@@ -1,4 +1,5 @@
-<h1>Friends</h1>
+{% comment %} BEFORE {% endcomment %}
+{% comment %} <h1>Friends</h1>
 <ul id="friends">
     {% for friend in friends %}
         <li id="request-{{ friend.user.id }}">
@@ -13,4 +14,47 @@
             {% endif %}
         </li>
     {% endfor %}
-</ul>
+</ul> {% endcomment %}
+
+
+{% comment %} AFTER {% endcomment %}
+<div class="container mt-4">
+    <h1 class="mb-4">Friends</h1>
+    {% if friends %}
+        <ul id="friends" class="list-group">
+            {% for friend in friends %}
+                <li id="request-{{ friend.user.id }}" class="list-group-item d-flex align-items-center">
+                    <div class="row w-100">
+                        <div class="col-md-2 fw-bold text-truncate">
+                            {% if friend.user.username == user.username %}
+                                <a href="/profile/{{ friend.friend.username }}/" class="user-profile-link text-decoration-none" data-username="{{ friend.friend.username }}">
+                                    {{ friend.friend.username }}
+                                </a>
+                            {% else %}
+                                <a href="/profile/{{ friend.user.username }}/" class="user-profile-link text-decoration-none" data-username="{{ friend.user.username }}">
+                                    {{ friend.user.username }}
+                                </a>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-2 text-muted">
+                            Grade: {% if friend.user.username == user.username %}{{ friend.friend.user_grade }}{% else %}{{ friend.user.user_grade }}{% endif %}
+                        </div>
+                        <div class="col-md-2 text-muted">
+                            Level: {% if friend.user.username == user.username %}{{ friend.friend.user_level }}{% else %}{{ friend.user.user_level }}{% endif %}
+                        </div>
+                        <div class="col-md-2 text-muted">
+                            Wallet: {% if friend.user.username == user.username %}{{ friend.friend.user_wallet }}{% else %}{{ friend.user.user_wallet }}{% endif %}
+                        </div>
+                        <div class="col-md-3 text-muted text-truncate">
+                            Location: {% if friend.user.username == user.username %}{{ friend.friend.user_location }}{% else %}{{ friend.user.user_location }}{% endif %}
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            You don't have a friend yet.
+        </div>
+    {% endif %}
+    </div>
