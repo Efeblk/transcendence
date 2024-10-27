@@ -453,3 +453,35 @@ def logout(request):
     except Friendship.DoesNotExist:
         return Response({'error': 'You could not log out'}, status=500)
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getuser(request):
+
+    friends_count = Friendship.objects.filter(
+        (Q(user=request.user) | Q(friend=request.user)),
+        status='accepted'
+    ).distinct().count()
+
+    pending_requests_count = Friendship.objects.filter(friend=request.user, status='pending').count()
+
+    profile_picture = request.user.profile_picture.url  # Varsayılan değer
+    try:
+        # user_imagejson kontrolü ve işleme
+        if (hasattr(request.user, 'user_imagejson') and 
+            isinstance(request.user.user_imagejson, dict)):
+            
+            # Varsayılan resim kontrolü
+            if (request.user.profile_picture.url.endswith('/default.jpg') and 
+                request.user.user_imagejson.get('versions', {}).get('large')):
+                profile_picture = request.user.user_imagejson['versions']['large']
+    except AttributeError:
+        # Herhangi bir hata durumunda varsayılan profile_picture kullanılacak
+        pass
+    context = {
+        'user': request.user,
+        'friends': friends_count,
+        'requests': pending_requests_count,
+        'profile_picture': profile_picture
+    }
+    return JsonResponse(context, status=200)

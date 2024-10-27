@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UsersViewSet, signup, login_, login_view, signup_view, search_people, user_profile, profile_view, search_view, add_friend, list_friend_requests, accept_friend_request, decline_friend_request, friends, unfriend_friend, edit_profile_view, edit_profile, logout, verify_2fa_view, check_2fa_code, login42
+from .views import UsersViewSet, signup, login_, login_view, signup_view, search_people, user_profile, profile_view, search_view, add_friend, list_friend_requests, accept_friend_request, decline_friend_request, friends, unfriend_friend, edit_profile_view, edit_profile, logout, verify_2fa_view, check_2fa_code, login42, getuser
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -12,6 +12,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('users-data/', UsersViewSet.as_view(), name='users-data-list'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('users-data/', getuser, name='getuser'),
     path('rq_login/', login_, name='rq_login'),
     path('login42/', login42, name='login42'),
     path('login/', login_view, name='login'),
