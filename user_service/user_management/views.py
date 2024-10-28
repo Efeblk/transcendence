@@ -4,7 +4,7 @@ import secrets
 import requests
 import urllib.parse
 from .models import Users, Friendship, EmailVerificationCode
-from .serializers import UsersSerializer
+from .serializers import UsersSerializer, OnlineUsersSerializer
 from rest_framework import generics
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
@@ -123,8 +123,12 @@ def login_(request):
         
         # First login step
         if check_password(password, user.password):
-            send_2fa_code(user)  # Send the 2FA code
-            return JsonResponse({'success': True, 'message': '2FA code sent to email. Enter the code to continue.'}, status=200)
+            tokens = get_tokens_for_user(user)
+            user.user_status = "online"
+            user.save()
+            #send_2fa_code(user)  # Send the 2FA code
+            return JsonResponse({'success': True, 'message': 'Login successful', 'access_token': tokens['access'], 'refresh_token': tokens['refresh']}, status=200)
+            #return JsonResponse({'success': True, 'message': '2FA code sent to email. Enter the code to continue.'}, status=200)
         
         return JsonResponse({'message': 'Invalid username or password.'}, status=400)
     
@@ -465,3 +469,9 @@ def getuser(request):
     except Exception as e:
         print(f"Error in getuser view: {e}")  # Log the error
         return JsonResponse({'error': 'Internal server error'}, status=500)
+
+class UsersViewSetOnline(generics.ListCreateAPIView):
+    serializer_class = OnlineUsersSerializer
+
+    def get_queryset(self):
+        return Users.objects.filter(user_status='online')

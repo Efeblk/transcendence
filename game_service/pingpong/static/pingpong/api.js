@@ -28,34 +28,35 @@ class GameAPI {
             console.error('Error fetching current player:', error);
             throw error;
         });
-    }
+    } 
 
-    saveGameDatatoProfile(player, aiScore, playerScore, winner) {
-        console.log('saving game data to player', player, aiScore, playerScore, winner);
-        return fetch(`/api/user_service/save-data-profile`, {
-            method: 'POST',
+    getOnlinePlayers() {
+        const token = localStorage.getItem('access_token');
+        console.log('token', token);
+    
+        return fetch(`/api/users/users-data`, {
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                player: player,
-                ai_score: aiScore,
-                player_score: playerScore,
-                winner: winner,
-            }),
+                'Authorization': `Bearer ${token}` // Include the token here
+            }
         })
         .then(response => {
             if (!response.ok) {
                 throw new Error(`API request failed: ${response.status}`);
             }
-            return response.json();
+            return response.json(); // Parse the JSON response
+        })
+        .then(responseJSON => {
+            const players = responseJSON.map(user => user.username); // Extract usernames
+            console.log('Online players:', players);
+            return players; // Return the list of usernames
         })
         .catch(error => {
-            console.error('Error saving game data:', error);
+            console.error('Error fetching online players:', error);
             throw error;
         });
     }
-
+    
     // Method to save game data via POST request
     saveGameData(player, aiScore, playerScore, winner) {
         console.log('Saving game data:', player, aiScore, playerScore, winner);

@@ -6,3 +6,8 @@ class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
         fields = '__all__'  # Tüm alanları kullanmak için
+
+class OnlineUsersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Users
+        fields = ['username'] 

@@ -41,6 +41,14 @@ button:active {
     background-color: var(--green-hover);
 }
 
+.tournement-button {
+    background-color: var(--blue);
+}
+
+.tournement-button:hover {
+    background-color: var(--blue-hover);
+}
+
 .ai-button {
     background-color: var(--blue);
 }
@@ -66,7 +74,7 @@ button:active {
 }
 
 /* Adjust padding for specific buttons */
-.start-button, .ai-button, .player-button, .restart-button {
+.start-button, .ai-button, .player-button, .restart-button, .tournement-button {
     padding: 20px 40px;
 }
 
@@ -113,6 +121,7 @@ button:active {
 
 /* Ensure buttons have consistent margin */
 #AIorPlayerContainer .ai-button,
+#AIorPlayerContainer .tournement-button,
 #AIorPlayerContainer .player-button {
     margin: 0;
 }

@@ -131,8 +131,10 @@ function router() {
     
                         if (data.success) {
                             //localStorage.setItem('access_token', data.access_token);
-                            alert('2FA code sent to email. Enter the code to continue.');
-                            window.location.href = `/verify-2fa?username=${encodeURIComponent(username)}`;
+                            localStorage.setItem('access_token', data.access_token); // Store the access token
+                            window.location.href = '/profile'; // Redirect to profile after successful login    
+                            //alert('2FA code sent to email. Enter the code to continue.');
+                            //window.location.href = ⁠ /verify-2fa?username=${encodeURIComponent(username)} ⁠;
                         } else {
                             alert(data.message);
                         }
@@ -222,8 +224,8 @@ function router() {
                     const data = await response.json();
     
                     if (data.success) {
-                        localStorage.setItem('access_token', data.access_token); // Store the access token
-                        window.location.href = '/profile'; // Redirect to profile after successful login
+                        // localStorage.setItem('access_token', data.access_token); // Store the access token
+                        // window.location.href = '/profile'; // Redirect to profile after successful login
                     } else {
                         messageDiv.textContent = data.message;
                         messageDiv.style.color = 'red';

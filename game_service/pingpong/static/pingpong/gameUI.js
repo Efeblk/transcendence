@@ -46,11 +46,17 @@ class GameUI {
             this.hideAIorPlayerButtons();
         });
 
+        this.tournementButton = this.createButton('Tournement', 'game-button tournement-button', () => {
+            this.startCallback('tournement'); // it will start tourneament mode, for now its player
+            this.hideAIorPlayerButtons();
+        });
+
         // Insert the buttons into the DOM
         const aiOrPlayerContainer = document.getElementById('AIorPlayerContainer');
         if (aiOrPlayerContainer) {
             aiOrPlayerContainer.appendChild(this.aiButton);
             aiOrPlayerContainer.appendChild(this.playerButton);
+            aiOrPlayerContainer.appendChild(this.tournementButton);
         } else {
             console.error('AI or Player container not found');
         }
@@ -113,11 +119,13 @@ class GameUI {
     showAIorPlayerButtons() {
         if (this.aiButton) this.aiButton.style.display = 'block';
         if (this.playerButton) this.playerButton.style.display = 'block';
+        if (this.tournementButton) this.tournementButton.style.display = 'block';
     }
 
     hideAIorPlayerButtons() {
         if (this.aiButton) this.aiButton.style.display = 'none';
         if (this.playerButton) this.playerButton.style.display = 'none';
+        if (this.tournementButton) this.tournementButton.style.display = 'none';
     }
 
     hideDifficultyButtons() {

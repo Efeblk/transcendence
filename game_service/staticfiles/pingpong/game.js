@@ -26,7 +26,8 @@ class Game {
             console.error('Game container not found');
         }
         this.api = new GameAPI();
-
+        this.tournament = new Tournament(this.api, this.gameUI); // Initialize Tournament
+        
         this.table = new Table(this.scene, texturePath);
         this.initPlayer();
         this.opponent = null; // Placeholder for opponent (AI or Player 2)
@@ -168,6 +169,35 @@ class Game {
         this.aiScore = 0;
     }
 
+    async tournementMode() {
+        const initialized = await this.tournament.init();
+        if (!initialized) return; // Return if tournament failed to initialize
+
+        this.startNextMatch();
+    }
+
+    startNextMatch() {
+        const match = this.tournament.getNextMatch();
+        if (!match) return; // No more matches
+
+        const player1 = match[0];
+        const player2 = match[1];
+
+        if (player2 === null) {
+            console.log(`${player1} advances automatically`);
+            this.startNextMatch(); // Skip to the next match
+            return;
+        }
+
+        console.log(`Starting match between ${player1} and ${player2}`);
+        this.player = new Player(player1, this.scene, gameConfig.paddle.positionZ.player, gameConfig.paddle.color.player);
+        this.opponent = new Player(player2, this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai, 'player2');
+
+        this.reset();
+        this.isRunning = true;
+        this.animate(); // Start the animation loop
+    }
+
     start(mode) {
         if (this.isRunning) {
             console.log('Game is already running!');
@@ -179,6 +209,9 @@ class Game {
             console.log('Starting Player vs Player mode...');
             this.opponent = new Player('opponent', this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai, 'player2');
             this.setupControlsOpponent();
+        } else if (mode === 'tournement') {
+            console.log('Starting Tournement mode...');
+            this.tournementMode();
         } else {
             console.log('Playing against AI...');
             this.opponent = new AIpaddle('AI', this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai);
