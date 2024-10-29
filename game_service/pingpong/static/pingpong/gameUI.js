@@ -47,7 +47,7 @@ class GameUI {
         });
 
         this.tournementButton = this.createButton('Tournement', 'game-button tournement-button', () => {
-            this.startCallback('tournement'); // it will start tourneament mode, for now its player
+            this.startCallback('tournament'); // it will start tourneament mode, for now its player
             this.hideAIorPlayerButtons();
         });
 

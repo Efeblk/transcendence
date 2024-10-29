@@ -1,7 +1,8 @@
 class Tournament {
-    constructor(api, gameUI) {
+    constructor(api, gameUI, onTournamentEnd) {
         this.api = api;
         this.gameUI = gameUI;
+        this.onTournamentEnd = onTournamentEnd; // Callback function for ending the tournament
         this.players = [];
         this.bracket = [];
         this.currentRound = 0;
@@ -13,11 +14,12 @@ class Tournament {
             this.players = await this.api.getOnlinePlayers();
             if (this.players.length < 4) {
                 console.log('Not enough players for a tournament');
-                this.gameUI.showMessage('Not enough players for a tournament!');
+                alert('Not enough players for a tournament!');
                 return false;
             }
 
             this.players = this.shuffleArray(this.players);
+            console.log('Tournament players:', this.players);
             this.createBracket();
             return true; // Tournament initialized successfully
         } catch (error) {
@@ -27,6 +29,7 @@ class Tournament {
     }
 
     createBracket() {
+        this.bracket = [];
         for (let i = 0; i < this.players.length; i += 2) {
             if (this.players[i + 1]) {
                 this.bracket.push([this.players[i], this.players[i + 1]]);
@@ -34,6 +37,7 @@ class Tournament {
                 this.bracket.push([this.players[i], null]); // Bye for odd player
             }
         }
+        this.currentMatchIndex = 0;
     }
 
     getNextMatch() {
@@ -47,13 +51,17 @@ class Tournament {
         return match;
     }
 
-    advanceToNextRound() {
+    advanceToNextRound(winner) {
         console.log('Advancing to the next round...');
-        const winners = this.bracket.map(match => (match[1] === null ? match[0] : this.getWinner(match[0], match[1])));
+        const winners = this.bracket.map(match => {
+            if (match[1] === null) return match[0]; // Player advances automatically
+            return (match[0] === winner || match[1] === winner) ? winner : this.getWinner(match[0], match[1]);
+        });
 
         if (winners.length === 1) {
             console.log(`Tournament Winner: ${winners[0]}`);
-            this.gameUI.showMessage(`Tournament Winner: ${winners[0]}`);
+            alert(`Tournament Winner: ${winners[0]}`);
+            this.onTournamentEnd(); // Call the callback to signal the end
             return;
         }
 
