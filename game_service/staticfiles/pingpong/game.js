@@ -51,6 +51,8 @@ class Game {
 
         this.player1ScoreElement = document.getElementById('player1Score').querySelector('span');
         this.player2ScoreElement = document.getElementById('player2Score').querySelector('span');
+
+        this.updateScore(this.playerScore, this.aiScore);
     }
 
     updatePlayerNames(player1, player2) {
@@ -126,7 +128,7 @@ class Game {
         const initialized = await this.tournament.init();
         if (!initialized) 
         {
-            this.endTournament();
+            // this.endTournament();
             return; // Return if the tournament failed to initialize
         }
         this.tournamentMode = true;
@@ -236,6 +238,7 @@ class Game {
         if (this.opponent) this.opponent.getPaddle().mesh.position.x = 0;
         this.playerScore = 0;
         this.aiScore = 0;
+        this.updateScore(this.playerScore, this.aiScore);
     }
 
     endTournament() {

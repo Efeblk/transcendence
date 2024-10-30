@@ -128,7 +128,7 @@ class Game {
         const initialized = await this.tournament.init();
         if (!initialized) 
         {
-            this.endTournament();
+            // this.endTournament();
             return; // Return if the tournament failed to initialize
         }
         this.tournamentMode = true;
