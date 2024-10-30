@@ -1,6 +1,29 @@
-<form id="verification-form">
+{% comment %} BEFORE {% endcomment %}
+{% comment %} <form id="verification-form">
     {% csrf_token %}
     <label for="code">Enter the code sent to your email:</label>
     <input type="text" id="code" name="code" required>
     <button type="submit">Verify</button>
-</form>
+</form> {% endcomment %}
+
+
+{% comment %} AFTER {% endcomment %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h2 class="mb-0">Email Verification</h2>
+        </div>
+        <div class="card-body">
+            <form id="verification-form">
+                {% csrf_token %}
+                <div class="form-group mb-3">
+                    <label for="code" class="form-label">Enter the code sent to your email:</label>
+                    <input type="text" id="code" name="code" class="form-control" placeholder="Verification code" required>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success btn-block">Verify</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

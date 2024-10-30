@@ -4,7 +4,7 @@ import secrets
 import requests
 import urllib.parse
 from .models import Users, Friendship, EmailVerificationCode
-from .serializers import UsersSerializer
+from .serializers import UsersSerializer, OnlineUsersSerializer
 from rest_framework import generics
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
@@ -23,6 +23,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.core.files.base import ContentFile
 from django.conf import settings
 
 
@@ -123,8 +124,12 @@ def login_(request):
         
         # First login step
         if check_password(password, user.password):
-            send_2fa_code(user)  # Send the 2FA code
-            return JsonResponse({'success': True, 'message': '2FA code sent to email. Enter the code to continue.'}, status=200)
+            tokens = get_tokens_for_user(user)
+            user.user_status = "online"
+            user.save()
+            #send_2fa_code(user)  # Send the 2FA code
+            return JsonResponse({'success': True, 'message': 'Login successful', 'access_token': tokens['access'], 'refresh_token': tokens['refresh']}, status=200)
+            #return JsonResponse({'success': True, 'message': '2FA code sent to email. Enter the code to continue.'}, status=200)
         
         return JsonResponse({'message': 'Invalid username or password.'}, status=400)
     
@@ -311,6 +316,27 @@ def fortytwo_login(request):
     auth_url = f"{settings.FORTYTWO_AUTH_URL}?{urllib.parse.urlencode(params)}"
     return JsonResponse({'auth_url': auth_url})
 
+def save_image(user_data, user):
+    large_image_url = user_data.get('image', {}).get('versions', {}).get('large')
+    
+    if large_image_url:
+        try:
+            response = requests.get(large_image_url)
+            response.raise_for_status()
+
+            image_content = ContentFile(response.content)
+
+            user.profile_picture.save(f"{user.username}_large.jpg", image_content)
+            user.save()
+
+            return True
+        except requests.RequestException as e:
+            print(f"Error downloading image: {e}")
+            return False
+    else:
+        print("Large image URL not found.")
+        return False 
+
 def fortytwo_callback(request):
     code = request.GET.get('code')
     state = request.GET.get('state')
@@ -350,7 +376,7 @@ def fortytwo_callback(request):
     campus = user_data.get('campus', [])
     c = campus[0]
 
-    Users.objects.get_or_create(
+    user, created = Users.objects.get_or_create(
         id=user_data['id'],  # 42 API'den alınan benzersiz kullanıcı kimliği
         defaults={
             'username': user_data['login'],
@@ -372,7 +398,7 @@ def fortytwo_callback(request):
             'user_status': 'active',  # Varsayılan olarak 'active' durum
         }
     )
-
+    save_image(user_data, user)
     return redirect(f"/#/login-success?username={user_data['login']}")
 
 @csrf_exempt
@@ -439,3 +465,21 @@ def logout(request):
     except Friendship.DoesNotExist:
         return Response({'error': 'You could not log out'}, status=500)
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getuser(request):
+    try:
+        user_data = {
+            'user': request.user.user_name,  # Adjust this based on your user model
+        }
+        return JsonResponse(user_data, status=200)
+    except Exception as e:
+        print(f"Error in getuser view: {e}")  # Log the error
+        return JsonResponse({'error': 'Internal server error'}, status=500)
+
+class UsersViewSetOnline(generics.ListCreateAPIView):
+    serializer_class = OnlineUsersSerializer
+
+    def get_queryset(self):
+        return Users.objects.filter(user_status='online')

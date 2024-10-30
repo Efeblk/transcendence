@@ -3,6 +3,7 @@ from .models import GameData
 from .serializers import GameDataSerializer
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.shortcuts import get_list_or_404
 
 # View to list all saved game data and create new game data
 class GameDataListCreateView(generics.ListCreateAPIView):
@@ -14,9 +15,15 @@ class GameDataDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = GameData.objects.all()
     serializer_class = GameDataSerializer
 
+class PlayerGameDataView(generics.ListAPIView):
+    serializer_class = GameDataSerializer
+
+    def get_queryset(self):
+        player_name = self.kwargs['player']
+        return get_list_or_404(GameData, player=player_name)
+
 def game_view(request):
     return render(request, 'game/game.html')
-
 
 def game_starter_script(request):
     # This is a dynamically served script, but in production you can serve a static version

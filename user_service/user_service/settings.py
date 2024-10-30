@@ -38,7 +38,7 @@ CACHES = {
 # 42 login için
 FORTYTWO_CLIENT_ID = os.getenv('FORTYTWO_CLIENT_ID')
 FORTYTWO_CLIENT_SECRET = os.getenv('FORTYTWO_CLIENT_SECRET')
-FORTYTWO_REDIRECT_URI = 'https://localhost/api/auth/42/callback'
+FORTYTWO_REDIRECT_URI = 'http://localhost/api/auth/42/callback'
 FORTYTWO_AUTH_URL = 'https://api.intra.42.fr/oauth/authorize'
 FORTYTWO_TOKEN_URL = 'https://api.intra.42.fr/oauth/token'
 FORTYTWO_USER_URL = 'https://api.intra.42.fr/v2/me'
@@ -119,6 +119,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'user_service.wsgi.application'
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1', 'https://localhost', 'https://192.168.221.131', 'https://example.com']
+# ! http://localhost
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',  # Default

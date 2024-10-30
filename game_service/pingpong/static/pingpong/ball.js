@@ -32,6 +32,7 @@ class Ball {
     }
 
     update() {
+        
         // Apply spin effect by adjusting the direction based on the spin value
         const spinEffect = this.spin * 0.001;
         const angle = Math.atan2(this.direction.z, this.direction.x) + spinEffect;
@@ -65,10 +66,11 @@ class Ball {
         this.direction.z = -this.direction.z;  // Reverse the direction on collision with paddle
         
         // Cap the speed to avoid excessive increases
-        this.speed = Math.min(this.speed + 0.01, this.maxSpeed);
+        this.speed = Math.min(this.speed + gameConfig.ball.addSpeed, this.maxSpeed);
 
         // Slightly move the ball away from the paddle to prevent immediate re-collision
         this.mesh.position.z += this.direction.z * 0.1;
+        console.log('Ball speed:', this.speed);
     }
 
     reset() {

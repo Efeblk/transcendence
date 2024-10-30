@@ -38,24 +38,27 @@ const gameConfig = {
             player: 2.5,
             ai: -6
         },
-        movementSpeed: {
-            easyAI: 0.1,
-            mediumAI: 0.2,
-            hardAI: 0.5,
-            player: 0.2,
-        },
-
+        movementSpeed: 0.2,  // Speed of paddle movement
     },
     ball: {
         color: 0xffffff,  // White color for the ball
         size: 0.2,  // Radius of the ball
         metalness: 0.5,  // Reflective property of the ball
         roughness: 0.1,  // Surface roughness of the ball
-        speed: 1,  // Initial speed of the ball
-        maxSpeed: 3,  // Maximum speed of the ball
+        speed: 1.3,  // Initial speed of the ball
+        maxSpeed: 4,  // Maximum speed of the ball
+        addSpeed: 0.1,  // Speed increase on paddle hit
         spin: 0,  // Initial spin of the ball
         colorChangeSpeed: 0.02,  // Speed of color change
         direction : { x: 0.02, z: 0.05 },  // Initial direction of the ball
         colorOffset: 0,  // Offset for color oscillation
+    },
+    player1: {
+        left : 'ArrowLeft',
+        right : 'ArrowRight',
+    },
+    player2: {
+        left : 'a',
+        right : 'd',
     },
 };

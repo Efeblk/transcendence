@@ -1,4 +1,5 @@
-{% if query %}
+{% comment %} BEFORE {% endcomment %}
+{% comment %} {% if query %}
     <h2>Search results for "{{ query }}":</h2>
 
     {% if results %}
@@ -15,5 +16,44 @@
     {% else %}
         <!-- No results found -->
         <p>No people found matching "{{ query }}"</p>
+    {% endif %}
+{% endif %} {% endcomment %}
+
+<!-- AFTER -->
+{% if query %}
+    <h2 class="mt-4">Search results for "{{ query }}":</h2>
+
+    {% if results %}
+        <ul class="list-group mt-3">
+            <!-- Loop through each user in the results and display their details -->
+            {% for user in results %}
+                <li class="list-group-item d-flex align-items-center">
+                    <div class="row w-100">
+                        <div class="col-md-2 fw-bold text-truncate">
+                            <a href="/profile/{{user.username}}/" class="user-profile-link text-decoration-none" data-username="{{ user.username }}">
+                                {{ user.username }}
+                            </a>
+                        </div>
+                        <div class="col-md-2 text-muted">
+                            Grade: {{ user.user_grade }}
+                        </div>
+                        <div class="col-md-2 text-muted">
+                            Level: {{ user.user_level }}
+                        </div>
+                        <div class="col-md-2 text-muted">
+                            Wallet: {{ user.user_wallet }}
+                        </div>
+                        <div class="col-md-3 text-muted text-truncate">
+                            Location: {{ user.user_location }}
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <!-- No results found -->
+        <div class="alert alert-warning mt-3" role="alert">
+            No people found matching "{{ query }}"
+        </div>
     {% endif %}
 {% endif %}
