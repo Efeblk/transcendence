@@ -23,6 +23,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.core.files.base import ContentFile
 from django.conf import settings
 
 
@@ -146,24 +147,10 @@ def profile_view(request):
 
     pending_requests_count = Friendship.objects.filter(friend=request.user, status='pending').count()
 
-    profile_picture = request.user.profile_picture.url  # Varsayılan değer
-    try:
-        # user_imagejson kontrolü ve işleme
-        if (hasattr(request.user, 'user_imagejson') and 
-            isinstance(request.user.user_imagejson, dict)):
-            
-            # Varsayılan resim kontrolü
-            if (request.user.profile_picture.url.endswith('/default.jpg') and 
-                request.user.user_imagejson.get('versions', {}).get('large')):
-                profile_picture = request.user.user_imagejson['versions']['large']
-    except AttributeError:
-        # Herhangi bir hata durumunda varsayılan profile_picture kullanılacak
-        pass
     context = {
         'user': request.user,
         'friends': friends_count,
         'requests': pending_requests_count,
-        'profile_picture': profile_picture
     }
     return Response(context, template_name='user_service/profile.html')
 
@@ -329,6 +316,27 @@ def fortytwo_login(request):
     auth_url = f"{settings.FORTYTWO_AUTH_URL}?{urllib.parse.urlencode(params)}"
     return JsonResponse({'auth_url': auth_url})
 
+def save_image(user_data, user):
+    large_image_url = user_data.get('image', {}).get('versions', {}).get('large')
+    
+    if large_image_url:
+        try:
+            response = requests.get(large_image_url)
+            response.raise_for_status()
+
+            image_content = ContentFile(response.content)
+
+            user.profile_picture.save(f"{user.username}_large.jpg", image_content)
+            user.save()
+
+            return True
+        except requests.RequestException as e:
+            print(f"Error downloading image: {e}")
+            return False
+    else:
+        print("Large image URL not found.")
+        return False 
+
 def fortytwo_callback(request):
     code = request.GET.get('code')
     state = request.GET.get('state')
@@ -368,7 +376,7 @@ def fortytwo_callback(request):
     campus = user_data.get('campus', [])
     c = campus[0]
 
-    Users.objects.get_or_create(
+    user, created = Users.objects.get_or_create(
         id=user_data['id'],  # 42 API'den alınan benzersiz kullanıcı kimliği
         defaults={
             'username': user_data['login'],
@@ -390,7 +398,7 @@ def fortytwo_callback(request):
             'user_status': 'active',  # Varsayılan olarak 'active' durum
         }
     )
-
+    save_image(user_data, user)
     return redirect(f"/#/login-success?username={user_data['login']}")
 
 @csrf_exempt

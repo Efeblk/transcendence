@@ -1,43 +1,10 @@
-{% comment %} BEFORE {% endcomment %}
-{% comment %} <h1>User Profile</h1>
-<img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="img-fluid rounded-circle" style="width: 200px; height: 200px;">
-<p>Username: {{user.username}}</p>
-<p>{{user.user_status}}</p>
-<p>Email: {{user.user_email}}</p>
-<p>Location: {{user.user_location}}</p>
-<p>Wallet: {{user.user_wallet}}</p>
-<p>Level: {{user.user_level}}</p>
-<p>Grade: {{user.user_grade}}</p>
-<p>user_created_on: {{user.user_created_on}}</p>
-<p>user_updated_on: {{user.user_updated_on}}</p>
-<h5>Skills</h5>
-<ul>
-    {% for skill in user.user_skillsjson %}
-        <li>{{ skill.name }} - Level: {{ skill.level }}</li>
-    {% endfor %}
-</ul>
-<p>
-    <a href="/friends" class="user-profile-link">
-        Friends: {{friends}}
-    </a>
-</p>
-<p>
-    <a href="/friend_requests" class="user-profile-link">
-        Friendship Requests: {{requests}}
-    </a>
-</p>
-<button id="LogOut" class="btn btn-secondary">LogOut</button>
-<button id="Edit" class="btn btn-secondary">Edit</button> {% endcomment %}
-
-
-
 <!-- AFTER -->
 <div class="container mt-5">
     <!-- User Profile Header -->
     <div class="text-center mb-4">
         <h1 class="display-4">User Profile</h1>
         <img 
-            src="{{ profile_picture }}" 
+            src="{{ user.profile_picture.url }}" 
             alt="Profile Picture" 
             class="img-fluid rounded-circle mb-3" 
             style="width: 200px; height: 200px;"
