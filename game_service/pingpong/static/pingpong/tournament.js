@@ -53,18 +53,22 @@ class Tournament {
 
     advanceToNextRound(winner) {
         console.log('Advancing to the next round...');
+
+        // Collect winners from the current round
         const winners = this.bracket.map(match => {
-            if (match[1] === null) return match[0]; // Player advances automatically
-            return (match[0] === winner || match[1] === winner) ? winner : this.getWinner(match[0], match[1]);
-        });
+            // Player advances automatically if there's no opponent
+            return match[1] === null ? match[0] : (match.includes(winner) ? winner : null);
+        }).filter(player => player !== null); // Filter out nulls
 
         if (winners.length === 1) {
+            // If there's only one player left, they are the tournament winner
             console.log(`Tournament Winner: ${winners[0]}`);
             alert(`Tournament Winner: ${winners[0]}`);
             this.onTournamentEnd(); // Call the callback to signal the end
             return;
         }
 
+        // Create a new bracket for the next round
         this.bracket = [];
         for (let i = 0; i < winners.length; i += 2) {
             if (winners[i + 1]) {
@@ -76,11 +80,6 @@ class Tournament {
 
         this.currentMatchIndex = 0;
         this.currentRound++;
-    }
-
-    getWinner(player1, player2) {
-        // Placeholder for actual match result
-        return Math.random() > 0.5 ? player1 : player2;
     }
 
     shuffleArray(array) {

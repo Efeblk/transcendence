@@ -84,6 +84,16 @@ class Game {
         document.addEventListener('keyup', (event) => this.player.handleKeyUp(event));
     }
 
+    setupControlsOpponent() {
+        document.addEventListener('keydown', (event) => this.opponent.handleKeyDown(event));
+        document.addEventListener('keyup', (event) => this.opponent.handleKeyUp(event));
+    }
+
+    destroyControlsOpponent() {
+        document.removeEventListener('keydown', (event) => this.opponent.handleKeyDown(event));
+        document.removeEventListener('keyup', (event) => this.opponent.handleKeyUp(event));
+    }
+
     removeOpponent() {
         if (this.opponent) {
             this.scene.remove(this.opponent.getPaddle().mesh);
@@ -95,7 +105,11 @@ class Game {
 
     async startTournamentMode() {
         const initialized = await this.tournament.init();
-        if (!initialized) return; // Return if the tournament failed to initialize
+        if (!initialized) 
+        {
+            this.endTournament();
+            return; // Return if the tournament failed to initialize
+        }
         this.tournamentMode = true;
         this.startNextMatch();
     }
@@ -217,9 +231,13 @@ class Game {
         if (mode === 'player') {
             console.log('Starting Player vs Player mode...');
             this.opponent = new Player('opponent', this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai, 'player2');
+            this.destroyControlsOpponent();
+            this.setupControlsOpponent();
         } else if (mode === 'tournament') {
             console.log('Starting Tournament mode...');
             this.startTournamentMode();
+            this.destroyControlsOpponent();
+            this.setupControlsOpponent();
         } else {
             console.log('Playing against AI...');
             this.opponent = new AIpaddle('AI', this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai);
@@ -227,6 +245,7 @@ class Game {
                 this.opponent.setDifficulty(mode);
                 console.log(`AI difficulty set to ${mode}`);
             }
+            this.destroyControlsOpponent();
         }
 
         this.reset();
