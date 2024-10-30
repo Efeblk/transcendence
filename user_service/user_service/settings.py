@@ -97,6 +97,9 @@ MIDDLEWARE = [
     'django_otp.middleware.OTPMiddleware',
 ]
 
+CSRF_COOKIE_SECURE = True  # Set to True in production
+CORS_ORIGIN_ALLOW_ALL = True  # Use specific origins in production
+
 ROOT_URLCONF = 'user_service.urls'
 
 TEMPLATES = [
@@ -138,9 +141,9 @@ EMAIL_HOST_PASSWORD= os.getenv('EMAIL_HOST_PASSWORD')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('USER_POSTGRESQL_DB_NAME'),
-        'USER': os.getenv('USER_POSTGRESQL_USER'),
-        'PASSWORD': os.getenv('USER_POSTGRESQL_PASS'),
+        'NAME': os.getenv('USER_POSTGRESQL_DB_NAME', ''),
+        'USER': os.getenv('USER_POSTGRESQL_USER', ''),
+        'PASSWORD': os.getenv('USER_POSTGRESQL_PASS', ''),
         'HOST': 'user_db',  # The service name from docker-compose
         'PORT': '5432',
     }

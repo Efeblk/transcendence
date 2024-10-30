@@ -86,9 +86,9 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('GAME_POSTGRESQL_DB_NAME'),
-        'USER': os.getenv('GAME_POSTGRESQL_USER'),
-        'PASSWORD': os.getenv('GAME_POSTGRESQL_PASS'),
+        'NAME': os.getenv('GAME_POSTGRESQL_DB_NAME', ''),
+        'USER': os.getenv('GAME_POSTGRESQL_USER', ''),
+        'PASSWORD': os.getenv('GAME_POSTGRESQL_PASS', ''),
         'HOST': 'game_db',  # The service name from docker-compose
         'PORT': '5432',
     }
