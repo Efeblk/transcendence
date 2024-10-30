@@ -5,6 +5,7 @@ class Tournament {
         this.onTournamentEnd = onTournamentEnd; // Callback function for ending the tournament
         this.players = [];
         this.bracket = [];
+        this.matchWinners = []; // Store match winners for the current round
         this.currentRound = 0;
         this.currentMatchIndex = 0;
     }
@@ -30,6 +31,7 @@ class Tournament {
 
     createBracket() {
         this.bracket = [];
+        this.matchWinners = []; // Clear match winners for the new round
         for (let i = 0; i < this.players.length; i += 2) {
             if (this.players[i + 1]) {
                 this.bracket.push([this.players[i], this.players[i + 1]]);
@@ -42,7 +44,7 @@ class Tournament {
 
     getNextMatch() {
         if (this.currentMatchIndex >= this.bracket.length) {
-            this.advanceToNextRound();
+            this.prepareNextRound(); // Prepare the next round if the current one is complete
             return null; // No more matches in the current round
         }
 
@@ -51,34 +53,27 @@ class Tournament {
         return match;
     }
 
-    advanceToNextRound(winner) {
-        console.log('Advancing to the next round...');
+    recordMatchWinner(winner) {
+        this.matchWinners.push(winner); // Add the match winner to the list
+        if (this.matchWinners.length === this.bracket.length) {
+            // If all matches in the current round are complete, move to the next round
+            this.prepareNextRound();
+        }
+    }
 
-        // Collect winners from the current round
-        const winners = this.bracket.map(match => {
-            // Player advances automatically if there's no opponent
-            return match[1] === null ? match[0] : (match.includes(winner) ? winner : null);
-        }).filter(player => player !== null); // Filter out nulls
-
-        if (winners.length === 1) {
-            // If there's only one player left, they are the tournament winner
-            console.log(`Tournament Winner: ${winners[0]}`);
-            alert(`Tournament Winner: ${winners[0]}`);
+    prepareNextRound() {
+        // If only one player remains, they are the tournament winner
+        if (this.matchWinners.length === 1) {
+            console.log(`Tournament Winner: ${this.matchWinners[0]}`);
+            alert(`Tournament Winner: ${this.matchWinners[0]}`);
             this.onTournamentEnd(); // Call the callback to signal the end
             return;
         }
 
-        // Create a new bracket for the next round
-        this.bracket = [];
-        for (let i = 0; i < winners.length; i += 2) {
-            if (winners[i + 1]) {
-                this.bracket.push([winners[i], winners[i + 1]]);
-            } else {
-                this.bracket.push([winners[i], null]); // Bye for odd player
-            }
-        }
-
-        this.currentMatchIndex = 0;
+        // Update players for the next round based on the winners
+        this.players = this.matchWinners;
+        this.matchWinners = []; // Clear match winners for the new round
+        this.createBracket(); // Create a new bracket for the next round
         this.currentRound++;
     }
 

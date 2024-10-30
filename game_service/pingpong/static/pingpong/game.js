@@ -50,6 +50,11 @@ class Game {
         this.isRunning = false; // Game starts as not running
     }
 
+    updatePlayerNames(player1, player2) {
+        document.getElementById('player1Name').querySelector('span').textContent = player1;
+        document.getElementById('player2Name').querySelector('span').textContent = player2;
+    }
+
     async initPlayer() {
         try {
             const player = await this.api.getCurrentPlayer();
@@ -103,6 +108,12 @@ class Game {
         }
     }
 
+    removePlayer() {
+        this.scene.remove(this.player.getPaddle().mesh);
+        this.player.getPaddle().mesh.geometry.dispose();
+        this.player.getPaddle().mesh.material.dispose();
+    }
+    
     async startTournamentMode() {
         const initialized = await this.tournament.init();
         if (!initialized) 
@@ -132,10 +143,13 @@ class Game {
         }
 
         this.removeOpponent();
+        this.removePlayer();
 
         alert(`Starting match between ${player1} and ${player2}`);
         this.player = new Player(player1, this.scene, gameConfig.paddle.positionZ.player, gameConfig.paddle.color.player);
         this.opponent = new Player(player2, this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai, 'player2');
+
+        this.updatePlayerNames(player1, player2);
 
         this.reset();
         this.isRunning = true;
@@ -198,7 +212,7 @@ class Game {
             .catch(error => console.error('Error saving game result:', error));
 
         if (this.tournamentMode) {
-            this.tournament.advanceToNextRound(winner);
+            this.tournament.recordMatchWinner(winner); // Pass the match winner to the tournament
             this.startNextMatch();
             return;
         }
@@ -247,7 +261,7 @@ class Game {
             }
             this.destroyControlsOpponent();
         }
-
+        this.updatePlayerNames(this.player.getName(), this.opponent.getName());
         this.reset();
         this.isRunning = true;
         this.animate(); // Start the animation loop
