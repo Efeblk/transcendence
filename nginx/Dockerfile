@@ -10,7 +10,7 @@ RUN mkdir -p /etc/nginx/ssl
 RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout /etc/nginx/ssl/key.pem \
     -out /etc/nginx/ssl/cert.pem \
-    -subj "/C=US/ST=State/L=City/O=Organization/OU=Department/CN=example.com"
+    -subj "/C=US/ST=State/L=City/O=Organization/OU=Department/CN=192.168.221.131"
 
 # Copy the static files from the frontend directory into Nginx's web root directory
 COPY ./frontend/static /usr/share/nginx/html/

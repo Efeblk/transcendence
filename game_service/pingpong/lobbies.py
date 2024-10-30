@@ -1,0 +1,1 @@
+lobbies = [] # Global list to hold active lobbies

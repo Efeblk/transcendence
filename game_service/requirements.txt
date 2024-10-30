@@ -4,3 +4,4 @@ psycopg2-binary==2.9.6       # PostgreSQL adapter for Django
 gunicorn==20.1.0             # WSGI HTTP server for production
 
 python-dotenv
+channels

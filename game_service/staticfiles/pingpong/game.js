@@ -256,6 +256,7 @@ class Game {
         this.removeOpponent();
 
         if (mode === 'player') {
+            //before coming here it should wait for the other user in the lobby
             console.log('Starting Player vs Player mode...');
             this.opponent = new Player('opponent', this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai, 'player2');
             this.destroyControlsOpponent();
