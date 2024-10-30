@@ -132,6 +132,30 @@ button:active {
     transform: translateX(-50%);
 }
 
+/* Player score styling */
+.player-score {
+    position: absolute;
+    color: white;
+    font-size: 20px;
+    font-family: 'Arial', sans-serif;
+    padding: 5px 15px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 8px;
+    z-index: 10; /* Ensure it appears above other elements */
+}
+
+.player-score.top {
+    top: 110px; /* Position below the player 2 name */
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.player-score.bottom {
+    bottom: 110px; /* Position above the player 1 name */
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 /* AI and Player button container styling */
 #AIorPlayerContainer {
     position: absolute;

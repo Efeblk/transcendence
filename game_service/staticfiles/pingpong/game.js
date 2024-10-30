@@ -48,11 +48,19 @@ class Game {
         this.aiScore = 0;
         this.maxScore = 3;
         this.isRunning = false; // Game starts as not running
+
+        this.player1ScoreElement = document.getElementById('player1Score').querySelector('span');
+        this.player2ScoreElement = document.getElementById('player2Score').querySelector('span');
     }
 
     updatePlayerNames(player1, player2) {
         document.getElementById('player1Name').querySelector('span').textContent = player1;
         document.getElementById('player2Name').querySelector('span').textContent = player2;
+    }
+
+    updateScore(playerScore, opponentScore) {
+        this.player1ScoreElement.textContent = playerScore;
+        this.player2ScoreElement.textContent = opponentScore;
     }
 
     async initPlayer() {
@@ -194,6 +202,8 @@ class Game {
             } else {
                 this.playerScore++;
             }
+
+            this.updateScore(this.playerScore, this.aiScore);
 
             this.ball.reset();
 
