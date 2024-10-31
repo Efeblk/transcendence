@@ -26,7 +26,8 @@ SECRET_KEY = os.getenv('SECRET_KEY_USER')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost').split(',')
 
 # ! bu cacheleri tutmasını engellemek için var
 CACHES = {
@@ -119,8 +120,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'user_service.wsgi.application'
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1', 'https://localhost', 'https://192.168.221.131', 'https://example.com']
-# ! http://localhost
+CSRF_TRUSTED_ORIGINS = [os.getenv('BASE_URL')]
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',  # Default

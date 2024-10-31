@@ -25,7 +25,8 @@ SECRET_KEY = os.getenv('SECRET_KEY_GAME')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost').split(',')
 
 # ! cache engellemek için
 CACHES = {
