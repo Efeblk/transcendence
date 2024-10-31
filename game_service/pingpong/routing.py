@@ -1,6 +1,7 @@
-from django.urls import re_path
-from . import consumers
+from django.urls import path
+from pingpong.consumers import GlobalLobbiesConsumer, LobbyConsumer
 
 websocket_urlpatterns = [
-    re_path(r'ws/lobby/(?P<lobby_name>\w+)/$', consumers.LobbyConsumer.as_asgi()),
+    path("ws/lobbies/", GlobalLobbiesConsumer.as_asgi()),  # Route for global lobbies
+    path("ws/lobby/<str:lobby_name>/", LobbyConsumer.as_asgi()),  # Route for individual lobby
 ]

@@ -61,11 +61,12 @@ services:
   # Django (Backend) Service
   game_service:
     build: ./game_service
-    command: python manage.py runserver 0.0.0.0:8000
+    command: /bin/sh -c "python manage.py runserver 0.0.0.0:8000 && daphne -b 0.0.0.0 -p 4000 backend.asgi:application"
     volumes:
       - ./game_service:/app
     ports:
       - "8000:8000"
+      - "4000:4000"
     networks:
       - app-network
     depends_on:

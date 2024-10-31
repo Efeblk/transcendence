@@ -1,75 +1,100 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from . import lobbies  # Import the global lobbies list
 
-class LobbyConsumer(AsyncWebsocketConsumer):
+class GlobalLobbiesConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['lobby_name']
-        self.room_group_name = f'lobby_{self.room_name}'
-
-        # Join lobby group
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        self.global_group_name = 'global_lobbies'
+        
+        # Join the global lobbies group
+        await self.channel_layer.group_add(
+            self.global_group_name,
+            self.channel_name
+        )
+        
         await self.accept()
-
-        # Send the current state of the lobbies to the user
-        await self.send(text_data=json.dumps({'lobbies': lobbies}))
+        
+        # Optionally, send the initial list of lobbies to the client
+        await self.send(text_data=json.dumps({
+            'message': 'Connected to global lobbies',
+            'action': 'initial_lobbies',
+            'lobbies': await self.get_initial_lobbies()  # Replace with actual lobby data
+        }))
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        # Leave the global lobbies group
+        await self.channel_layer.group_discard(
+            self.global_group_name,
+            self.channel_name
+        )
 
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get('action')
-
+        
         if action == 'create_lobby':
-            await self.create_lobby(data)
-        elif action == 'join_lobby':
-            await self.join_lobby(data)
+            # Broadcast new lobby creation to all clients
+            lobby_data = {
+                'name': data['name'],
+                'capacity': data['capacity'],
+                'owner': data['owner'],
+                'players': [data['owner']]
+            }
+            await self.channel_layer.group_send(
+                self.global_group_name,
+                {
+                    'type': 'lobby_update',
+                    'lobby': lobby_data,
+                    'action': 'lobbyCreated'
+                }
+            )
 
-    async def create_lobby(self, data):
-        lobby_name = data['name']
-        creator = self.scope['user'].username
+    async def lobby_update(self, event):
+        # Send the updated lobby data to the WebSocket
+        await self.send(text_data=json.dumps(event))
 
-        # Check if lobby already exists
-        if any(lobby['name'] == lobby_name for lobby in lobbies):
-            await self.send(text_data=json.dumps({'error': 'Lobby already exists!'}))
-            return
+    async def get_initial_lobbies(self):
+        # Placeholder function to get the initial list of lobbies (if any)
+        return [
+            {"name": "Example Lobby 1", "capacity": 2, "owner": "player1", "players": ["player1"]},
+            {"name": "Example Lobby 2", "capacity": 4, "owner": "player2", "players": ["player2"]}
+        ]
 
-        # Create the new lobby
-        new_lobby = {'name': lobby_name, 'creator': creator, 'players': [creator], 'capacity': data['capacity']}
-        lobbies.append(new_lobby)
 
-        # Notify all users in the lobby group about the new lobby
+class LobbyConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.lobby_name = self.scope['url_route']['kwargs']['lobby_name']
+        self.lobby_group_name = f'lobby_{self.lobby_name}'
+        
+        # Join the specific lobby group
+        await self.channel_layer.group_add(
+            self.lobby_group_name,
+            self.channel_name
+        )
+        
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        # Leave the specific lobby group
+        await self.channel_layer.group_discard(
+            self.lobby_group_name,
+            self.channel_name
+        )
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        message = data.get('message')
+        
+        # Broadcast message to the lobby group
         await self.channel_layer.group_send(
-            self.room_group_name,
+            self.lobby_group_name,
             {
-                'type': 'lobby_updated',
-                'lobby': new_lobby
+                'type': 'lobby_message',
+                'message': message
             }
         )
 
-    async def join_lobby(self, data):
-        lobby_name = data['name']
-        player = self.scope['user'].username
-
-        # Find the lobby
-        lobby = next((lobby for lobby in lobbies if lobby['name'] == lobby_name), None)
-        if lobby:
-            if lobby['capacity'] > len(lobby['players']):
-                lobby['players'].append(player)
-                # Notify all users in the lobby group about the updated lobby
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        'type': 'lobby_updated',
-                        'lobby': lobby
-                    }
-                )
-            else:
-                await self.send(text_data=json.dumps({'error': 'Lobby is full!'}))
-        else:
-            await self.send(text_data=json.dumps({'error': 'Lobby does not exist!'}))
-
-    async def lobby_updated(self, event):
-        lobby = event['lobby']
-        await self.send(text_data=json.dumps({'lobby': lobby}))
+    async def lobby_message(self, event):
+        # Send a message to WebSocket
+        await self.send(text_data=json.dumps({
+            'message': event['message']
+        }))

@@ -1,45 +1,49 @@
 class LobbyManager {
     constructor() {
-        this.socket = new WebSocket(`wss://192.168.221.131/ws/lobby/`); // Adjust as necessary
+        this.socket = new WebSocket(`wss://192.168.221.131/ws/lobbies/`); // Connect to global lobbies WebSocket
         this.lobbies = [];
+        this.isSocketOpen = false;
         this.setupSocketEvents();
     }
 
     setupSocketEvents() {
-        this.socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            this.handleServerMessage(data); // Delegate message handling
+        this.socket.onopen = () => {
+            this.isSocketOpen = true;
+            console.log("Connected to the global lobbies WebSocket.");
         };
 
-        this.socket.onopen = () => {
-            console.log("Connected to the lobby WebSocket.");
+        this.socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.lobbies) {
+                // Handle initial lobbies list or updates to lobbies
+                this.lobbies = data.lobbies;
+                this.displayLobbies();
+            } else if (data.lobbyUpdated) {
+                this.updateLobby(data.lobbyUpdated);
+            } else if (data.error) {
+                console.error(data.error);
+            }
         };
 
         this.socket.onclose = () => {
-            console.log("Disconnected from the lobby WebSocket.");
+            this.isSocketOpen = false;
+            console.log("Disconnected from the global lobbies WebSocket.");
         };
     }
 
-    handleServerMessage(data) {
-        if (data.action === 'lobbyCreated') {
-            console.log(`Lobby "${data.lobby.name}" created successfully.`);
-            this.updateLobby(data.lobby); // Update the newly created lobby
-        } else if (data.action === 'lobbyUpdated') {
-            this.updateLobby(data.lobby); // Update an existing lobby with the latest data
-        } else if (data.error) {
-            console.error(data.error); // Log any error messages received
-        } else {
-            this.lobbies = data.lobbies || []; // Initialize or update lobbies list on connect
-            this.displayLobbies(); // Display the updated list of lobbies
-        }
-    }
-
     createLobby(name, capacity, owner) {
-        this.socket.send(JSON.stringify({ action: 'create_lobby', name, capacity, owner }));
-    }
+        const lobbyData = JSON.stringify({ action: 'create_lobby', name, capacity, owner });
 
-    joinLobby(name) {
-        this.socket.send(JSON.stringify({ action: 'join_lobby', name }));
+        if (this.isSocketOpen) {
+            // If the socket is open, send immediately
+            this.socket.send(lobbyData);
+        } else {
+            // If the socket is still connecting, wait for it to open
+            this.socket.onopen = () => {
+                this.isSocketOpen = true;
+                this.socket.send(lobbyData);
+            };
+        }
     }
 
     updateLobby(lobby) {
@@ -60,4 +64,3 @@ class LobbyManager {
         });
     }
 }
-

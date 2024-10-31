@@ -3,9 +3,7 @@ class GameUI {
         // Save the start and reset callbacks
         this.startCallback = startCallback;
         this.resetCallback = resetCallback;
-        this.lobbyManager = new LobbyManager();
         this.currentLobby = null; // Initialize currentLobby to track the created lobby
-        this.socket = this.lobbyManager.socket; // Reference the WebSocket from the LobbyManager
 
         // Create and store references to the buttons
         this.createStartButton();
@@ -13,13 +11,12 @@ class GameUI {
         this.createAIorPlayerButtons(player);
         this.createDifficultyButtons();
 
-        this.setupSocketEvents();
     }
-
+    
     setupSocketEvents() {
         this.socket.onmessage = (event) => {
             const data = JSON.parse(event.data); // Parse the incoming WebSocket message
-
+            
             if (data.action === 'lobbyCreated') {
                 console.log(`Lobby "${data.lobby.name}" created successfully.`); // Log success message
                 this.currentLobby = data.lobby; // Set the current lobby
@@ -40,7 +37,7 @@ class GameUI {
         console.log(`Updated lobby: ${this.currentLobby.name}, Players: ${this.currentLobby.players.length}/${this.currentLobby.capacity}`);
     }
     
-
+    
     createButton(text, className, onClick) {
         // Helper method to create a button element
         const button = document.createElement('button');
@@ -49,21 +46,21 @@ class GameUI {
         button.onclick = onClick;
         return button;
     }
-
+    
     createStartButton() {
         // Create the start button
         this.startButton = this.createButton('Start Game', 'game-button start-button', () => {
             this.showAIorPlayerButtons();
             this.hidePlayButton();
         });
-
+        
         // Insert the button into the DOM
         const gameContainer = document.getElementById('gameContainer');
         if (gameContainer) {
             gameContainer.appendChild(this.startButton);
         }
     }
-
+    
     createAIorPlayerButtons(player) {
         // Create AI and Player buttons
         this.aiButton = this.createButton('Play Against AI', 'game-button ai-button', () => {
@@ -72,29 +69,26 @@ class GameUI {
         });
 
         this.playerButton = this.createButton('Player vs Player', 'game-button player-button', () => {
-            const lobbyName = prompt("Enter the lobby name:"); // Ask for lobby name
+            const lobbyName = prompt("Enter the lobby name:");
             if (!lobbyName) return; // Check if the lobby name is not empty
-            this.lobbyManager.createLobby(lobbyName, 2, player); // Create lobby with capacity 2
-            console.log(`Lobby "${lobbyName}" requested to be created. Waiting for an opponent...`);            
-            this.lobbyManager.socket.onmessage = (event) => {
-                const data = JSON.parse(event.data); // Parse the incoming WebSocket message
         
-                if (data.action === 'lobbyUpdated' && data.lobby.name === lobbyName) {
-                    // Check if the lobby is full
-                    const playersInLobby = data.lobby.players.length;
-                    const capacity = data.lobby.capacity;
+            // Create LobbyManager instance if not already done, to manage all lobbies
+            if (!this.lobbyManager) {
+                this.lobbyManager = new LobbyManager();
+            }
+            
+            // Request to create a new lobby
+            this.lobbyManager.createLobby(lobbyName, 2, player);
         
-                    if (playersInLobby >= capacity) {
-                        console.log(`All players have joined lobby "${lobbyName}". Starting the game...`);
-                        
-                        // Call the start callback to begin the game
-                        this.startCallback('player');
-                        this.hideAIorPlayerButtons(); // Hide the AI/Player selection buttons
-                    } else {
-                        console.log(`Current players in lobby "${lobbyName}": ${playersInLobby}/${capacity}`);
-                    }
-                }
-            };
+            // Create an instance of Lobby for managing the specific lobby
+            this.lobby = new Lobby(
+                lobbyName,
+                player,
+                this.startCallback.bind(this),
+                this.hideAIorPlayerButtons.bind(this)
+            );
+        
+            console.log(`Lobby "${lobbyName}" requested to be created. Waiting for an opponent...`);        
             
             //this.startCallback('player'); // Start player vs player mode
             //this.hideAIorPlayerButtons();

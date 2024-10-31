@@ -27,6 +27,11 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # ! cache engellemek için
 CACHES = {
     'default': {
@@ -38,6 +43,7 @@ CACHES = {
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
