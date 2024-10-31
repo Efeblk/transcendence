@@ -471,7 +471,7 @@ def logout(request):
 def getuser(request):
     try:
         user_data = {
-            'user': request.user.user_name,  # Adjust this based on your user model
+            'user': request.user.username,  # user_name tam adı, username ise unique kullanıcı adı
         }
         return JsonResponse(user_data, status=200)
     except Exception as e:
