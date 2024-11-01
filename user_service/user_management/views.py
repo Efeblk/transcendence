@@ -135,23 +135,40 @@ def login_(request):
     
     return JsonResponse({'message': 'Invalid request method.'}, status=400)
 
-@api_view(['GET'])
+
+
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 @renderer_classes([TemplateHTMLRenderer])
 def profile_view(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            # Oyun verilerini işleyin
+            # first_item = data[0] if data else {}
+            context = {
+                'user': request.user,
+                'game_data': data,
+            }
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Geçersiz JSON verisi'}, status=400)
+    else:
+        context = {
+            'user': request.user,
+            'game_data': {},
+        }
 
     friends_count = Friendship.objects.filter(
         (Q(user=request.user) | Q(friend=request.user)),
         status='accepted'
     ).distinct().count()
-
     pending_requests_count = Friendship.objects.filter(friend=request.user, status='pending').count()
 
-    context = {
-        'user': request.user,
+    context.update({
         'friends': friends_count,
         'requests': pending_requests_count,
-    }
+    })
+
     return Response(context, template_name='user_service/profile.html')
 
 
@@ -483,3 +500,15 @@ class UsersViewSetOnline(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return Users.objects.filter(user_status='online')
+
+
+def get_data_from_url(url):
+    try:
+        with urllib.request.urlopen(url) as response:
+            data = response.read()  # Read the response data
+            # If the response is JSON, decode it
+            json_data = json.loads(data.decode("utf-8"))
+            return json_data
+    except Exception as e:
+        print(f"Error fetching data: {e}")
+        return None

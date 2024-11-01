@@ -245,59 +245,71 @@ function router() {
         }
         else
         {
-            fetch('/api/users/profile', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}` // Include the token here
-                }
-            })
-                .then(response => {
-                    if (response.status === 401) {
-                        localStorage.removeItem('access_token');
-                        window.location.href = '/login';
-                    }
-                    if (!response.ok) {
-                        throw new Error('Failed to load profile');
-                    }
-                    return response.text();  // Return HTML content
+            fetch(`/api/game/pingpong/game-data/`, {
+                    method: 'GET',
                 })
-                .then(htmlContent => {
-                    app.innerHTML = htmlContent;
-
-                    const LogOut = document.getElementById('LogOut');
-                    LogOut.addEventListener('click', async function(event) {
-                        event.preventDefault(); // Prevent form submission
-                        
-                        try {
-                            const response = await fetch('/api/users/logout/', {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': `Bearer ${token}`
+                .then(response => response.json())  // Correctly parse the JSON response
+                .then(data => {
+                    fetch(`/api/users/profile/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`,
+                        },
+                        body: JSON.stringify(data)
+                    })
+                        .then(response => {
+                            if (response.status === 401) {
+                                localStorage.removeItem('access_token');
+                                window.location.href = '/login';
+                            }
+                            if (!response.ok) {
+                                throw new Error('Failed to load profile');
+                            }
+                            return response.text();  // Return HTML content
+                        })
+                        .then(htmlContent => {
+                            app.innerHTML = htmlContent;
+        
+                            const LogOut = document.getElementById('LogOut');
+                            LogOut.addEventListener('click', async function(event) {
+                                event.preventDefault(); // Prevent form submission
+                                
+                                try {
+                                    const response = await fetch('/api/users/logout/', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Authorization': `Bearer ${token}`
+                                        }
+                                    });
+                            
+                                    // Handle different response statuses
+                                    if (response.status === 200) {
+                                        // Successful logout with no content
+                                        localStorage.removeItem('access_token');  // Remove the token
+                                        window.location.href = '/login';  // Redirect to login page
+                                    } else {
+                                        const data = await response.json(); // Parse JSON only if not 204
+                                        alert(data.message || 'An error occurred during logout.');
+                                    }
+                                } catch (error) {
+                                    console.error('Error during logout:', error);
+                                    alert('An error occurred during logout. Please try again.');
                                 }
                             });
-                    
-                            // Handle different response statuses
-                            if (response.status === 200) {
-                                // Successful logout with no content
-                                localStorage.removeItem('access_token');  // Remove the token
-                                window.location.href = '/login';  // Redirect to login page
-                            } else {
-                                const data = await response.json(); // Parse JSON only if not 204
-                                alert(data.message || 'An error occurred during logout.');
-                            }
-                        } catch (error) {
-                            console.error('Error during logout:', error);
-                            alert('An error occurred during logout. Please try again.');
-                        }
-                    });
-
-                    const Edit = document.getElementById('Edit');
-                    Edit.addEventListener('click', function() {
-                        window.location.href = '/edit_profile';
-                    }); 
+        
+                            const Edit = document.getElementById('Edit');
+                            Edit.addEventListener('click', function() {
+                                window.location.href = '/edit_profile';
+                            }); 
+                        })
+                        .catch(error => {
+                            console.error('Error loading profile:', error);
+                        });
                 })
                 .catch(error => {
-                    console.error('Error loading profile:', error);
+                    console.error('Error fetching game data:', error);
+                    throw error;
                 });
         }
     } else if (path === '/edit_profile'){
