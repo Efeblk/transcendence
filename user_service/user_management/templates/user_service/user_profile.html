@@ -79,7 +79,7 @@
         </div>
         <div class="container">
             {% for data in game_data %}
-                {% if data.player == profile_user.username or data.player2 == profile_user.username %}
+                {% if data.player == profile_user.username and not data.tournament or data.player2 == profile_user.username and not data.tournament %}
                     <div class="card mb-3 {% if data.player_score == 3 and data.player == profile_user.username or data.opponent == 3 and data.player2 == profile_user.username %}bg-primary-subtle text-black{% else %}bg-danger-subtle text-black{% endif %}">
                         <div class="card-body">
                             <h5 class="card-title">{{ data.player }} vs {{ data.player2 }}</h5>

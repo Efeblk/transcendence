@@ -58,7 +58,7 @@ class GameAPI {
     }
     
     // Method to save game data via POST request
-    saveGameData(player, player2, aiScore, playerScore, winner) {
+    saveGameData(player, player2, aiScore, playerScore, winner, iftournament) {
         console.log('Saving game data:', player, aiScore, playerScore, winner);
         return fetch(`${this.baseUrl}game-data/`, {
             method: 'POST',
@@ -71,6 +71,7 @@ class GameAPI {
                 opponent: aiScore,
                 player_score: playerScore,
                 winner: winner,
+                tournament: iftournament,
             }),
         })
         .then(response => {

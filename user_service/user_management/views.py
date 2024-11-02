@@ -3,7 +3,7 @@ import os
 import secrets
 import requests
 import urllib.parse
-from .models import Users, Friendship, EmailVerificationCode
+from .models import Users, Friendship
 from .serializers import UsersSerializer, OnlineUsersSerializer
 from rest_framework import generics
 from rest_framework import generics, status

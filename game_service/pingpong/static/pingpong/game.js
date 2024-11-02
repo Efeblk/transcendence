@@ -234,14 +234,18 @@ class Game {
         this.isRunning = false;
         const winner = this.playerScore > this.aiScore ? this.player.getName() : this.opponent.getName();
 
-        this.api.saveGameData(this.player.getName(), this.opponent.getName(), this.aiScore, this.playerScore, winner)
+        if (this.tournamentMode) {
+            this.api.saveGameData(this.player.getName(), this.opponent.getName(), this.aiScore, this.playerScore, winner, true)
             .then(data => console.log('Game result saved:', data))
             .catch(error => console.error('Error saving game result:', error));
-
-        if (this.tournamentMode) {
             this.tournament.recordMatchWinner(winner); // Pass the match winner to the tournament
             this.startNextMatch();
             return;
+        }
+        else{
+            this.api.saveGameData(this.player.getName(), this.opponent.getName(), this.aiScore, this.playerScore, winner, false)
+            .then(data => console.log('Game result saved:', data))
+            .catch(error => console.error('Error saving game result:', error));
         }
         
         this.gameUI.showRestartButton(); // Show the restart button at the end of the game
