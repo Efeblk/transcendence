@@ -56,6 +56,8 @@
                     <p class="card-text mb-2"><strong>Grade:</strong> {{ profile_user.user_grade }}</p>
                     <p class="card-text mb-2"><strong>Created On:</strong> {{ profile_user.user_created_on }}</p>
                     <p class="card-text"><strong>Last Updated:</strong> {{ profile_user.user_updated_on }}</p>
+                    <p class="card-text"><strong>Wins:</strong> {{ wins }}</p>
+                    <p class="card-text"><strong>Losses:</strong> {{ losses }}</p>        
                 </div>
             </div>
 
@@ -73,6 +75,22 @@
                 </ul>
             </div>
             {% endif %}
+
+        </div>
+        <div class="container">
+            {% for data in game_data %}
+                {% if data.player == profile_user.username or data.player2 == profile_user.username %}
+                    <div class="card mb-3 {% if data.player_score == 3 and data.player == profile_user.username or data.opponent == 3 and data.player2 == profile_user.username %}bg-primary-subtle text-black{% else %}bg-danger-subtle text-black{% endif %}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ data.player }} vs {{ data.player2 }}</h5>
+                            <p class="card-text">
+                                <strong>Time:</strong> {{ data.timestamp }}<br>
+                                <strong>Score:</strong> {{ data.player_score }} vs {{ data.opponent }}
+                            </p>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
         </div>
     </div>
 </div>

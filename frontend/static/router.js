@@ -54,7 +54,7 @@ function router() {
         if (!token)
         {
             window.location.href = '/login';
-            alert("Önce giriş yapmalısınız");
+            alert("You should Login first");
         }
         else
         {
@@ -424,91 +424,99 @@ function router() {
 
             if (!token) {
                 window.location.href = '/login';  // Redirect to login if no token
-                alert("Önce giriş yapmalısınız");
+                alert("You should Login first");
             } else {
-                fetch(`/api/users/profile/${username}`, {  // Use the username in the API call
+                fetch(`/api/game/pingpong/game-data/`, {
                     method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`  // Include the token
-                    }
                 })
-                .then(response => {
-                    if (response.status === 401) {
-                        localStorage.removeItem('access_token');  // Remove token if unauthorized
-                        window.location.href = '/login';  // Redirect to login
-                    }
-                    if (!response.ok) {
-                        throw new Error('Failed to load profile');
-                    }
-                    return response.text();  // Return HTML content
-                })
-                .then(htmlContent => {
-                    app.innerHTML = htmlContent;  // Insert the HTML content into the app
-                    
-                    const AddFriend = document.getElementById('AddFriend');
-                    if (AddFriend) {
-                        AddFriend.addEventListener('click', function() {
-                            fetch('/api/users/add_friend/', {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': `Bearer ${token}`,
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({ username: username }) // Send the username in the request body
-                            })
-                            .then(response => {
-                                if (!response.ok) {
-                                    if (response.status === 400) {
-                                        return response.json().then(data => {
-                                            alert(data.message); // Alert the specific message from the backend
-                                        });
+                .then(response => response.json())  // Correctly parse the JSON response
+                .then(data => {
+                    fetch(`/api/users/profile/${username}/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`,
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => {
+                        if (response.status === 401) {
+                            localStorage.removeItem('access_token');  // Remove token if unauthorized
+                            window.location.href = '/login';  // Redirect to login
+                        }
+                        if (!response.ok) {
+                            throw new Error('Failed to load profile');
+                        }
+                        return response.text();  // Return HTML content
+                    })
+                    .then(htmlContent => {
+                        app.innerHTML = htmlContent;  // Insert the HTML content into the app
+                        
+                        const AddFriend = document.getElementById('AddFriend');
+                        if (AddFriend) {
+                            AddFriend.addEventListener('click', function() {
+                                fetch('/api/users/add_friend/', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Authorization': `Bearer ${token}`,
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ username: username }) // Send the username in the request body
+                                })
+                                .then(response => {
+                                    if (!response.ok) {
+                                        if (response.status === 400) {
+                                            return response.json().then(data => {
+                                                alert(data.message); // Alert the specific message from the backend
+                                            });
+                                        } else {
+                                            alert('Failed to add friend. Status: ' + response.status);
+                                        }
                                     } else {
-                                        alert('Failed to add friend. Status: ' + response.status);
+                                        return response.json(); // Parse the JSON response if successful
                                     }
-                                } else {
-                                    return response.json(); // Parse the JSON response if successful
-                                }
-                            })
-                            .then(data => {
-                                if (data) {
-                                    alert(data.message); // Notify the user with the message
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error adding friend:', error);
-                                alert('An unexpected error occurred.');
+                                })
+                                .then(data => {
+                                    if (data) {
+                                        alert(data.message); // Notify the user with the message
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error adding friend:', error);
+                                    alert('An unexpected error occurred.');
+                                });
+                            });
+                        }
+
+                        const acceptButtons = document.querySelectorAll('.accept-btn');
+                        const declineButtons = document.querySelectorAll('.decline-btn');
+                        const unfriendButtons = document.querySelectorAll('.unfriend-btn');
+                        
+                        acceptButtons.forEach(button => {
+                            button.addEventListener('click', function() {
+                                const friendId = this.getAttribute('data-id');
+                                handleFriendRequest(friendId, 'accept');
                             });
                         });
-                    }
-
-                    const acceptButtons = document.querySelectorAll('.accept-btn');
-                    const declineButtons = document.querySelectorAll('.decline-btn');
-                    const unfriendButtons = document.querySelectorAll('.unfriend-btn');
-                    
-                    acceptButtons.forEach(button => {
-                        button.addEventListener('click', function() {
-                            const friendId = this.getAttribute('data-id');
-                            handleFriendRequest(friendId, 'accept');
+                        
+                        declineButtons.forEach(button => {
+                            button.addEventListener('click', function() {
+                                const friendId = this.getAttribute('data-id');
+                                handleFriendRequest(friendId, 'decline');
+                            });
                         });
-                    });
-                    
-                    declineButtons.forEach(button => {
-                        button.addEventListener('click', function() {
-                            const friendId = this.getAttribute('data-id');
-                            handleFriendRequest(friendId, 'decline');
-                        });
-                    });
 
-                    unfriendButtons.forEach(button => {
-                        button.addEventListener('click', function() {
-                            const friendId = this.getAttribute('data-id');
-                            handleFriendRequest(friendId, 'unfriend');
+                        unfriendButtons.forEach(button => {
+                            button.addEventListener('click', function() {
+                                const friendId = this.getAttribute('data-id');
+                                handleFriendRequest(friendId, 'unfriend');
+                            });
                         });
-                    });
 
-                })
-                .catch(error => {
-                    console.error('Error loading profile:', error);
+                    })
+                    .catch(error => {
+                        console.error('Error loading profile:', error);
+                    });
                 });
             }
     }else if (path === '/friend_requests') {

@@ -183,7 +183,6 @@ def login_(request):
     return JsonResponse({'message': 'Invalid request method.'}, status=400)
 
 
-
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 @renderer_classes([TemplateHTMLRenderer])
@@ -191,12 +190,17 @@ def profile_view(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            # Oyun verilerini işleyin
-            # first_item = data[0] if data else {}
+            wins = sum(1 for game in data if game.get('winner') == request.user.username)
+            losses = sum(1 for game in data if game.get('winner') != request.user.username and 
+                         (game.get('player') == request.user.username or game.get('player2') == request.user.username))
+
             context = {
                 'user': request.user,
                 'game_data': data,
+                'wins': wins,
+                'losses': losses,
             }
+
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Geçersiz JSON verisi'}, status=400)
     else:
@@ -219,7 +223,7 @@ def profile_view(request):
     return Response(context, template_name='user_service/profile.html')
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 @renderer_classes([TemplateHTMLRenderer])
 def edit_profile_view(request):
@@ -229,13 +233,33 @@ def edit_profile_view(request):
     return Response(context, template_name='user_service/edit_profile.html')
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 @renderer_classes([TemplateHTMLRenderer])
 def user_profile(request, username):
     # Retrieve the user by their username
     profile_user = get_object_or_404(Users, username=username)
     user = request.user  # The logged-in user
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            wins = sum(1 for game in data if game.get('winner') == username)
+            losses = sum(1 for game in data if game.get('winner') != username and 
+                         (game.get('player') == username or game.get('player2') == username))
+
+            context = {
+                'game_data': data,
+                'wins': wins,
+                'losses': losses,
+            }
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Geçersiz JSON verisi'}, status=400)
+    else:
+        context = {
+            'game_data': {},
+        }
+
 
     # Check the status of the friendship
     friendship = Friendship.objects.filter(
@@ -254,11 +278,11 @@ def user_profile(request, username):
     else:
         action = 'none'  # Friendship is accepted
 
-    context = {
+    context.update({
         'profile_user': profile_user,
         'user': user,
         'action': action
-    }
+    })
     
     return Response(context, template_name='user_service/user_profile.html')
 
