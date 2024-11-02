@@ -1,82 +1,3 @@
-<!-- <div class="container mt-5">
-    <div class="text-center mb-4">
-        <h1 class="display-4">User Profile</h1>
-        <img 
-            src="{{ user.profile_picture.url }}" 
-            alt="Profile Picture" 
-            class="img-fluid rounded-circle mb-3" 
-            style="width: 200px; height: 200px;"
-        >
-    </div>
-
-    <div class="card mb-4 shadow-sm">
-        <div class="card-body">
-            <h5 class="card-title">{{ user.username }}</h5>
-            <p class="card-text mb-2"><strong>Status:</strong> {{ user.user_status }}</p>
-            <p class="card-text mb-2"><strong>Email:</strong> {{ user.user_email }}</p>
-            <p class="card-text mb-2"><strong>Location:</strong> {{ user.user_location }}</p>
-            <p class="card-text mb-2"><strong>Wallet:</strong> {{ user.user_wallet }}</p>
-            <p class="card-text mb-2"><strong>Level:</strong> {{ user.user_level }}</p>
-            <p class="card-text mb-2"><strong>Grade:</strong> {{ user.user_grade }}</p>
-            <p class="card-text mb-2"><strong>Created On:</strong> {{ user.user_created_on }}</p>
-            <p class="card-text"><strong>Last Updated:</strong> {{ user.user_updated_on }}</p>
-        </div>
-    </div>
-
-    {% if user.user_skillsjson and user.user_skillsjson|length > 0 %}
-    <div class="card mb-4 shadow-sm">
-        <div class="card-body">
-            <h5 class="card-title">Skills</h5>
-            <ul class="list-group list-group-flush">
-                {% for skill in user.user_skillsjson %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ skill.name }}
-                        <span class="badge bg-primary rounded-pill">Level: {{ skill.level }}</span>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-    {% endif %}
-
-    <div class="d-flex justify-content-between mb-4">
-        <a href="/friends" class="btn btn-outline-primary">
-            Friends: {{ friends }}
-        </a>
-        <a href="/friend_requests" class="btn btn-outline-warning">
-            Friendship Requests: {{ requests }}
-        </a>
-    </div>
-
-    <div class="container">
-        {% for data in game_data %}
-            {% if data.player == user.username %}
-                <div class="card mb-3 {% if data.player_score == 3 %}bg-primary-subtle text-black{% else %}bg-danger-subtle text-black{% endif %}">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ data.player }}</h5>
-                        <p class="card-text">
-                            <strong>Zaman:</strong> {{ data.timestamp }}<br>
-                            <strong>Skor:</strong> {{ data.player_score }} vs {{ data.opponent }}
-                        </p>
-                    </div>
-                </div>
-            {% endif %}
-        {% endfor %}
-    </div>
-    
-    
-    <br>
-
-    <div class="d-flex justify-content-between">
-        <button id="LogOut" class="btn btn-danger">Log Out</button>
-        <button id="Edit" class="btn btn-secondary">Edit</button>
-    </div>
-    <br>
-</div> -->
-
-
-
-<!-- AFTER -->
 <div class="container mt-5">
     <!-- User Profile Header -->
     <div class="mb-4">
@@ -103,6 +24,7 @@
     <!-- User Details -->
     <div class="card mb-4 shadow-sm">
         <div class="card-body">
+            <h5 class="card-title">{{ user.user_name }}</h5>
             <h5 class="card-title">{{ user.username }}</h5>
             <p class="card-text mb-2"><strong>Status:</strong> {{ user.user_status }}</p>
             <p class="card-text mb-2"><strong>Email:</strong> {{ user.user_email }}</p>

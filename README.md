@@ -54,17 +54,17 @@ Genellikle spa larda implict flow kullanılıyor ve bu nispeten basitleştirilmi
 *** GAME ****
 
 - players:
-      Therefore, users must have the ability to participate in a live Pong game against another player directly on the website. Both players will use the same keyboard. The Remote players module can enhance this functionality with remote players.
-- tournament:
-      A player must be able to play against another player, but it should also be possible to propose a tournament. This tournament will consist of multiple players who can take turns playing against each other. You have flexibility in how you implement the tournament, but it must clearly display who is playing against whom and the order of the players. There must be a matchmaking system: the tournament system organize the matchmaking of the participants, and announce the next fight.
+      Therefore, users must have the ability to participate in a live Pong game against another player directly on the website. Both players will use the same keyboard. The Remote players module can enhance this functionality with remote players. ✅
+- tournament:v
+      A player must be able to play against another player, but it should also be possible to propose a tournament. This tournament will consist of multiple players who can take turns playing against each other. You have flexibility in how you implement the tournament, but it must clearly display who is playing against whom and the order of the players. There must be a matchmaking system: the tournament system organize the matchmaking of the participants, and announce the next fight. ✅
 - All players must adhere to the same rules, which includes having identical paddle speed. ✅
-- Each user has a Match History including 1v1 games, dates, and relevant details, accessible to logged-in users.
+- Each user has a Match History including 1v1 games, dates, and relevant details, accessible to logged-in users. ✅
 
 *** USER ***
-- oyun oynamak isteyen logine gitsin
+- oyun oynamak isteyen logine gitsin ✅
 
 *** Security ***
-- Your website must be protected against SQL injections/XSS
+- Your website must be protected against SQL injections/XSS  ✅
 
 *** Docker ***
 - If you have a backend or any other features, it is mandatory to enable an HTTPS connection for all aspects (Utilize wss instead of ws...).
@@ -82,15 +82,14 @@ Genellikle spa larda implict flow kullanılıyor ve bu nispeten basitleştirilmi
 > Each user has a Match History including 1v1 games, dates, and relevant details, accessible to logged-in users. ?
 
 1	- 42 api ✅
-1 - zombie game
 >
 1	- JWT 2FA ✅
 1	- microservice ✅
 1	- 3D ✅
+1	- ai  ✅
 
 
 *** yapmasak da olur sanki ama kolay ***
 0.5	- game customization
-1	- ai opponent ? saydırabilirsek iyi ✅
 0.5	- support on devices ✅
 0.5	- farklı browserlar ✅

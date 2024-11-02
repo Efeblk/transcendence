@@ -130,11 +130,8 @@ function router() {
                         const data = await response.json();
     
                         if (data.success) {
-                            //localStorage.setItem('access_token', data.access_token);
-                            localStorage.setItem('access_token', data.access_token); // Store the access token
-                            window.location.href = '/profile'; // Redirect to profile after successful login    
-                            //alert('2FA code sent to email. Enter the code to continue.');
-                            //window.location.href = ⁠ /verify-2fa?username=${encodeURIComponent(username)} ⁠;
+                            alert('2FA code sent to email. Enter the code to continue.');
+                            window.location.href = `/verify-2fa?username=${encodeURIComponent(username)}`;
                         } else {
                             alert(data.message);
                         }
@@ -224,8 +221,8 @@ function router() {
                     const data = await response.json();
     
                     if (data.success) {
-                        // localStorage.setItem('access_token', data.access_token); // Store the access token
-                        // window.location.href = '/profile'; // Redirect to profile after successful login
+                        localStorage.setItem('access_token', data.access_token); // Store the access token
+                        window.location.href = '/profile'; // Redirect to profile after successful login
                     } else {
                         messageDiv.textContent = data.message;
                         messageDiv.style.color = 'red';
@@ -655,26 +652,21 @@ function handleFriendRequest(friendId, action) {
 // ! maygen
 const initiate42Login = async () => {
     try {
-        // İsteği at
         const response = await fetch('/api/auth/42/login/');
         console.log('Response type:', response.headers.get('content-type'));
         
-        // Response içeriğini kontrol et
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        // JSON'a çevir
         console.log('Received data:?');
         const data = await response.json();
         console.log('Received data:', data);
         
-        // auth_url var mı kontrol et
         if (!data.auth_url) {
             throw new Error('No auth_url in response');
         }
         
-        // 42'ye yönlendir
         window.location.href = data.auth_url;
         
     } catch (error) {

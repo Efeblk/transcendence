@@ -171,12 +171,8 @@ def login_(request):
         
         # First login step
         if check_password(password, user.password):
-            tokens = get_tokens_for_user(user)
-            user.user_status = "online"
-            user.save()
-            #send_2fa_code(user)  # Send the 2FA code
-            return JsonResponse({'success': True, 'message': 'Login successful', 'access_token': tokens['access'], 'refresh_token': tokens['refresh']}, status=200)
-            #return JsonResponse({'success': True, 'message': '2FA code sent to email. Enter the code to continue.'}, status=200)
+            send_2fa_code(user)  # Send the 2FA code
+            return JsonResponse({'success': True, 'message': '2FA code sent to email. Enter the code to continue.'}, status=200)
         
         return JsonResponse({'message': 'Invalid username or password.'}, status=400)
     
@@ -187,6 +183,8 @@ def login_(request):
 @permission_classes([IsAuthenticated])
 @renderer_classes([TemplateHTMLRenderer])
 def profile_view(request):
+    request.user.user_status = 'online'
+    request.user.save()
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -483,7 +481,7 @@ def fortytwo_callback(request):
             'user_created_on': user_data.get('created_at', ''),
             'user_updated_on': user_data.get('updated_at', ''),
             'user_type': 'normal',  # Varsayılan olarak 'standard' tip
-            'user_status': 'active',  # Varsayılan olarak 'active' durum
+            'user_status': 'online',  # Varsayılan olarak 'active' durum
         }
     )
     save_image(user_data, user)
@@ -524,7 +522,7 @@ def edit_profile(request):
     user = request.user
     data = request.data
 
-    user.username = data.get('username', user.username)
+    user.user_name = data.get('username', user.user_name)
     user.user_email = data.get('user_email', user.user_email)
     if 'profile_picture' in request.FILES:
         profile_picture = request.FILES['profile_picture']

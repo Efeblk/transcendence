@@ -37,6 +37,3 @@ urlpatterns = [
     path('verify-2fa/', verify_2fa_view, name='verify_2fa_view'),
     path('rq_verify-2fa/', check_2fa_code, name='rq_verify-2fa')
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
