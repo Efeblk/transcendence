@@ -68,6 +68,7 @@ class Game {
     async initPlayer() {
         try {
             const player = await this.api.getCurrentPlayer();
+            this.currentPlayerName = player;
             this.player = new Player(player, this.scene, gameConfig.paddle.positionZ.player, gameConfig.paddle.color.player);
             this.setupControls();
         } catch (error) {
@@ -132,6 +133,9 @@ class Game {
             return; // Return if the tournament failed to initialize
         }
         this.tournamentMode = true;
+
+        this.tournamentNickname = prompt("Enter the nickname for Tournament");
+
         this.startNextMatch();
     }
 
@@ -146,6 +150,17 @@ class Game {
         const player1 = match[0];
         const player2 = match[1];
 
+        let nickname1 = player1;
+        let nickname2 = player2;
+
+        if (this.tournamentNickname) {
+            if (player2 === this.currentPlayerName) {
+                nickname2 = this.tournamentNickname;
+            } else if (player1 === this.currentPlayerName) {
+                nickname1 = this.tournamentNickname;
+            }
+        } 
+
         if (player2 === null) {
             console.log(`${player1} advances automatically.`);
             this.startNextMatch(); // Skip to the next match
@@ -155,11 +170,11 @@ class Game {
         this.removeOpponent();
         this.removePlayer();
 
-        alert(`Starting match between ${player1} and ${player2}`);
+        alert(`Starting match between ${nickname1} and ${nickname2}`);
         this.player = new Player(player1, this.scene, gameConfig.paddle.positionZ.player, gameConfig.paddle.color.player);
         this.opponent = new Player(player2, this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai, 'player2');
 
-        this.updatePlayerNames(player1, player2);
+        this.updatePlayerNames(nickname1, nickname2);
 
         this.reset();
         this.isRunning = true;
