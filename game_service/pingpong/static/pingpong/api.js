@@ -96,5 +96,62 @@ class GameAPI {
             throw error;
         });
     }
+
+    async send2FACode(nickname) {
+        try {
+            const response = await fetch("/api/users/send_2fa_code/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ nickname }),
+            });
+            const data = await response.json();
+    
+            if (data.message) {
+                alert("2FA code has been sent to your email.");
+                
+                // Prompt for the 2FA code
+                const code = prompt("Enter the 2FA code sent to your email:");
+                if (code) {
+                    // Wait for verification before proceeding
+                    return await this.verify2FACode(code, nickname);
+                } else {
+                    alert("2FA code is required to proceed.");
+                    throw new Error("2FA code is required.");
+                }
+            } else {
+                alert("Failed to send 2FA code.");
+                throw new Error("Failed to send 2FA code.");
+            }
+        } catch (error) {
+            console.error("Error in send2FACode:", error);
+            throw error;
+        }
+    }
+    
+    async verify2FACode(code, nickname) {
+        try {
+            const response = await fetch("/api/users/check_2fa_code/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ nickname, code }),
+            });
+            const data = await response.json();
+    
+            if (data.success) {
+                // Successfully verified
+                return data;
+            } else {
+                alert("Invalid 2FA code!");
+                throw new Error("Invalid 2FA code.");
+            }
+        } catch (error) {
+            console.error("Error in verify2FACode:", error);
+            throw error;
+        }
+    }
     
 }
