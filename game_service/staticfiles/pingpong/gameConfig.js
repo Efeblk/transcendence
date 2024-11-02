@@ -46,7 +46,7 @@ const gameConfig = {
         metalness: 0.5,  // Reflective property of the ball
         roughness: 0.1,  // Surface roughness of the ball
         speed: 1.3,  // Initial speed of the ball
-        maxSpeed: 4,  // Maximum speed of the ball
+        maxSpeed: 3,  // Maximum speed of the ball
         addSpeed: 0.1,  // Speed increase on paddle hit
         spin: 0,  // Initial spin of the ball
         colorChangeSpeed: 0.02,  // Speed of color change
