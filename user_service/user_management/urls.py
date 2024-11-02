@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UsersViewSet, signup, login_, login_view, signup_view, search_people, user_profile, profile_view, search_view, add_friend, list_friend_requests, accept_friend_request, decline_friend_request, friends, unfriend_friend, edit_profile_view, edit_profile, logout, verify_2fa_view, check_2fa_code, login42, getuser, UsersViewSetOnline
+from .views import UsersViewSet, signup, send_2fa_code_game, login_, login_view, signup_view, search_people, user_profile, profile_view, search_view, add_friend, list_friend_requests, accept_friend_request, decline_friend_request, friends, unfriend_friend, edit_profile_view, edit_profile, logout, verify_2fa_view, check_2fa_code, login42, getuser, UsersViewSetOnline, check_2fa_code_game
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -32,6 +32,8 @@ urlpatterns = [
     path('friendships/accept/<int:friend_id>/', accept_friend_request, name='accept_friend_request'),
     path('friendships/decline/<int:friend_id>/', decline_friend_request, name='decline_friend_request'),    
     path('friendships/unfriend/<int:friend_id>/', unfriend_friend, name='unfriend_friend'),
+    path('send_2fa_code/', send_2fa_code_game, name='send_2fa_game'),
+    path('check_2fa_code/', check_2fa_code_game, name='check_2fa_code'),
     path('verify-2fa/', verify_2fa_view, name='verify_2fa_view'),
     path('rq_verify-2fa/', check_2fa_code, name='rq_verify-2fa')
 ]

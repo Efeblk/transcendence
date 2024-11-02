@@ -219,7 +219,7 @@ class Game {
         this.isRunning = false;
         const winner = this.playerScore > this.aiScore ? this.player.getName() : this.opponent.getName();
 
-        this.api.saveGameData(this.player.getName(), this.aiScore, this.playerScore, winner)
+        this.api.saveGameData(this.player.getName(), this.opponent.getName(), this.aiScore, this.playerScore, winner)
             .then(data => console.log('Game result saved:', data))
             .catch(error => console.error('Error saving game result:', error));
 
@@ -247,6 +247,57 @@ class Game {
         this.gameUI.showRestartButton(); // Show restart or any other end-of-tournament logic
     }
 
+    send2FACode(nickname) {
+        fetch("/api/users/send_2fa_code/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ nickname }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.message) {
+                    alert("2FA code has been sent to your email.");
+                    
+                    const code = prompt("Enter the 2FA code sent to your email:");
+                    if (code) {
+                        this.verify2FACode(code, nickname);
+                    } else {
+                        throw new Error("Unexpected response format.");
+                    }
+                } else {
+                    alert("Failed to send 2FA code.");
+                }
+            });
+    }
+    
+    verify2FACode(code, nickname) {
+        fetch("/api/users/check_2fa_code/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ nickname, code }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    this.opponent = new Player(
+                        nickname,
+                        this.scene,
+                        gameConfig.paddle.positionZ.ai,
+                        gameConfig.paddle.color.ai,
+                        "player2"
+                    );
+                    this.destroyControlsOpponent();
+                    this.setupControlsOpponent();
+                } else {
+                    alert("Invalid 2FA code!");
+                }
+            });
+    }
+
     start(mode) {
         if (this.isRunning) {
             console.log('Game is already running!');
@@ -257,9 +308,12 @@ class Game {
 
         if (mode === 'player') {
             console.log('Starting Player vs Player mode...');
-            this.opponent = new Player('opponent', this.scene, gameConfig.paddle.positionZ.ai, gameConfig.paddle.color.ai, 'player2');
-            this.destroyControlsOpponent();
-            this.setupControlsOpponent();
+            const nickname = prompt("Enter the nickname for Player 2:");
+            if (!nickname) {
+                alert("Nickname is required!");
+                return;
+            }
+            this.send2FACode(nickname)
         } else if (mode === 'tournament') {
             console.log('Starting Tournament mode...');
             this.startTournamentMode();

@@ -55,6 +55,34 @@ def send_2fa_code(user):
 
     send_mail(subject, message, from_email, [user.user_email])
 
+@csrf_exempt
+def send_2fa_code_game(request):
+    if request.method == 'POST':
+        body = json.loads(request.body)
+        nickname = body.get('nickname')
+        
+        # Verify if user exists
+        try:
+            user = Users.objects.get(username=nickname)
+        except Users.DoesNotExist:
+            return JsonResponse({'message': 'Invalid username'}, status=400)
+        
+        # Generate a 6-digit 2FA code and save it to the user's record
+        code = get_random_string(length=6, allowed_chars='0123456789')
+        user.two_fa_code = code
+        user.save()
+
+        # Send the 2FA code to the user's email
+        subject = 'Your 2FA Code'
+        message = f'Your one-time code is: {code}'
+        from_email = settings.DEFAULT_FROM_EMAIL
+
+        send_mail(subject, message, from_email, [user.user_email])
+        
+        return JsonResponse({'message': '2FA code sent.'}, status=200)
+    return JsonResponse({'error': 'Invalid request method.'}, status=405)
+
+
 
 def signup(request):
     if request.method == 'POST':
@@ -108,6 +136,25 @@ def check_2fa_code(request):
             return JsonResponse({'success': True, 'message': 'Login successful', 'access_token': tokens['access'], 'refresh_token': tokens['refresh']}, status=200)
         else:
             return JsonResponse({'message': 'Invalid 2FA code.'}, status=400)
+
+@csrf_exempt
+def check_2fa_code_game(request):
+    if request.method == 'POST':
+        body = json.loads(request.body)
+        nickname = body.get('nickname')
+        code_entered = body.get('code')
+
+        # Validate user and 2FA code
+        try:
+            user = Users.objects.get(username=nickname)
+        except Users.DoesNotExist:
+            return JsonResponse({'message': 'Invalid username.'}, status=400)
+        
+        if code_entered == user.two_fa_code:
+            return JsonResponse({'success': True, 'message': '2FA code verified.'}, status=200)
+        else:
+            return JsonResponse({'message': 'Invalid 2FA code.'}, status=400)
+    return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
 
 @csrf_exempt

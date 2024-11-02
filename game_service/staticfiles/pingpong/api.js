@@ -58,7 +58,7 @@ class GameAPI {
     }
     
     // Method to save game data via POST request
-    saveGameData(player, aiScore, playerScore, winner) {
+    saveGameData(player, player2, aiScore, playerScore, winner) {
         console.log('Saving game data:', player, aiScore, playerScore, winner);
         return fetch(`${this.baseUrl}game-data/`, {
             method: 'POST',
@@ -67,6 +67,7 @@ class GameAPI {
             },
             body: JSON.stringify({
                 player: player,
+                player2: player2,
                 opponent: aiScore,
                 player_score: playerScore,
                 winner: winner,
@@ -83,7 +84,7 @@ class GameAPI {
             throw error;
         });
     }
-
+    
     // Optional method to fetch game data (for example, game history)
     getGameData() {
         return fetch(`${this.baseUrl}game-data/`, {
@@ -95,4 +96,5 @@ class GameAPI {
             throw error;
         });
     }
+    
 }

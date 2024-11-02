@@ -2,6 +2,7 @@ from django.db import models
 
 class GameData(models.Model):
     player = models.CharField(max_length=100)
+    player2 = models.CharField(max_length=100)
     opponent = models.IntegerField()
     player_score = models.IntegerField()
     timestamp = models.DateTimeField(auto_now_add=True)
